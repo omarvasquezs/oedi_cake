@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Routes configuration.
  *
@@ -29,6 +30,7 @@ use Cake\Routing\RouteBuilder;
  * So you can use `$this` to reference the application class instance
  * if required.
  */
+
 return function (RouteBuilder $routes): void {
     /*
      * The default class to use for all routes
@@ -62,8 +64,8 @@ return function (RouteBuilder $routes): void {
          */
         $builder->connect('/pages/*', 'Pages::display');
 
-    // Login shortcut
-    $builder->connect('/login', ['controller' => 'Users', 'action' => 'login']);
+        // Login shortcut
+        $builder->connect('/login', ['controller' => 'Users', 'action' => 'login']);
 
         /*
          * Connect catchall routes for all controllers.
