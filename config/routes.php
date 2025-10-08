@@ -62,6 +62,9 @@ return function (RouteBuilder $routes): void {
          */
         $builder->connect('/pages/*', 'Pages::display');
 
+    // Login shortcut
+    $builder->connect('/login', ['controller' => 'Users', 'action' => 'login']);
+
         /*
          * Connect catchall routes for all controllers.
          *
