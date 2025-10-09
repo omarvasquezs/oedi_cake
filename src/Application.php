@@ -27,6 +27,12 @@ use Cake\Http\MiddlewareQueue;
 use Cake\ORM\Locator\TableLocator;
 use Cake\Routing\Middleware\AssetMiddleware;
 use Cake\Routing\Middleware\RoutingMiddleware;
+use Psr\Http\Message\ServerRequestInterface;
+
+use Authentication\AuthenticationService;
+use Authentication\AuthenticationServiceInterface;
+use Authentication\AuthenticationServiceProviderInterface;
+use Authentication\Middleware\AuthenticationMiddleware;
 
 /**
  * Application setup class.
@@ -36,7 +42,7 @@ use Cake\Routing\Middleware\RoutingMiddleware;
  *
  * @extends \Cake\Http\BaseApplication<\App\Application>
  */
-class Application extends BaseApplication
+class Application extends BaseApplication implements AuthenticationServiceProviderInterface
 {
     /**
      * Load all the application configuration and bootstrap logic.
@@ -89,6 +95,10 @@ class Application extends BaseApplication
                 'httponly' => true,
             ]));
 
+        // Add the AuthenticationMiddleware after the CsrfProtectionMiddleware
+        $authentication = new AuthenticationMiddleware($this);
+        $middlewareQueue->add($authentication);
+
         return $middlewareQueue;
     }
 
@@ -101,5 +111,36 @@ class Application extends BaseApplication
      */
     public function services(ContainerInterface $container): void
     {
+    }
+
+    /**
+     * Create and return AuthenticationService instance used by the AuthenticationMiddleware.
+     *
+     * @param \Psr\Http\Message\ServerRequestInterface $request The request to create the service for.
+     * @return \Authentication\AuthenticationServiceInterface
+     */
+    public function getAuthenticationService(ServerRequestInterface $request): AuthenticationServiceInterface
+    {
+        $service = new AuthenticationService();
+
+        // Load identifiers, you can add more (e.g. IdentifierCollection)
+        $service->loadIdentifier('Authentication.Password', [
+            'fields' => [
+                'username' => 'username',
+                'password' => 'password',
+            ],
+        ]);
+
+        // Load authenticators. Session and Form (POST) based
+        $service->loadAuthenticator('Authentication.Session');
+        $service->loadAuthenticator('Authentication.Form', [
+            'fields' => [
+                'username' => 'username',
+                'password' => 'password',
+            ],
+            'loginUrl' => '/login',
+        ]);
+
+        return $service;
     }
 }
