@@ -49,4 +49,35 @@ class AppController extends Controller
          */
         //$this->loadComponent('FormProtection');
     }
+
+    /**
+     * Common beforeFilter to set layouts conditionally.
+     * If the request is Users::login, use the dedicated 'login' layout.
+     */
+    public function beforeFilter(
+        \Cake\Event\EventInterface $event
+    ) {
+        parent::beforeFilter($event);
+
+        $controller = $this->getRequest()->getParam('controller');
+        $action = $this->getRequest()->getParam('action');
+
+        // If the request is Users::login, use the clean login layout and allow access
+        if ($controller === 'Users' && $action === 'login') {
+            $this->viewBuilder()->setLayout('login');
+            return;
+        }
+
+        // For all other pages, select the intranet layout and enforce authentication
+        $this->viewBuilder()->setLayout('intranet');
+
+        // Identity detection: Authentication middleware attaches 'identity', fallback to session
+        $identity = $this->getRequest()->getAttribute('identity');
+        $sessionUser = $this->getRequest()->getSession()->read('Auth.User');
+
+        if (!$identity && !$sessionUser) {
+            // Redirect unauthenticated users to login
+            return $this->redirect(['controller' => 'Users', 'action' => 'login']);
+        }
+    }
 }
