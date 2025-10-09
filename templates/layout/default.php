@@ -34,6 +34,12 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
     <?= $this->fetch('script') ?>
 </head>
 <body>
+    <?php
+    // Hide top nav on the Users::login page so the login card sits centered on a clean background
+    $controller = $this->request->getParam('controller');
+    $action = $this->request->getParam('action');
+    if (!($controller === 'Users' && $action === 'login')) :
+    ?>
     <nav class="top-nav">
         <div class="top-nav-title">
             <a href="<?= $this->Url->build('/') ?>"><span>Cake</span>PHP</a>
@@ -41,8 +47,18 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
         <div class="top-nav-links">
             <a target="_blank" rel="noopener" href="https://book.cakephp.org/5/">Documentation</a>
             <a target="_blank" rel="noopener" href="https://api.cakephp.org/">API</a>
+            <?php
+            // Show logout when identity is present either from Authentication middleware
+            // or the legacy session key used by the manual login fallback.
+            $identity = $this->request->getAttribute('identity');
+            $sessionUser = $this->request->getSession()->read('Auth.User');
+            if ($identity || $sessionUser) :
+            ?>
+                <?= $this->Form->postLink('Cerrar sesión', ['controller' => 'Users', 'action' => 'logout'], ['escape' => false, 'class' => 'logout-link']) ?>
+            <?php endif; ?>
         </div>
     </nav>
+    <?php endif; ?>
     <main class="main">
         <div class="container">
             <?= $this->Flash->render() ?>
