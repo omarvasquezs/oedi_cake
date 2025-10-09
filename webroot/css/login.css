@@ -1,0 +1,159 @@
+
+/* Login page tweaks */
+.login-bg {
+  position: fixed;
+  inset: 0;
+  background: #242424; /* exact background color */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+.login-card {
+  min-width: 396px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.login-card .card-body {
+  background: #ffffff;
+  border-radius: 12px;
+}
+.login-card .form-control {
+  height: 50px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  font-size: 15px;
+}
+.login-card .form-control::placeholder {
+  color: #999;
+}
+/* Focus style to match mockup */
+.login-card .form-control:focus {
+  border-color: #1e88e5;
+  box-shadow: 0 0 0 3px rgba(30,136,229,0.12);
+  outline: none;
+}
+.login-card .form-control:active {
+  border-color: #1e88e5;
+}
+.icon-wrap {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+}
+.icon-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #2196F3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+}
+.icon-lock {
+  color: #fff;
+  font-size: 28px;
+}
+.login-card h3 {
+  font-weight: 400;
+  color: #212121;
+  font-size: 26px;
+  margin-bottom: 30px;
+}
+.login-card .btn-primary {
+  background-color: #2196F3;
+  border-color: #2196F3;
+  padding: 13px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.login-card .btn-primary:hover {
+  background-color: #1976D2;
+  border-color: #1976D2;
+}
+.login-card a {
+  color: #2196F3;
+  text-decoration: none;
+  font-size: 14px;
+}
+.login-card a:hover {
+  text-decoration: underline;
+}
+.login-card label {
+  color: #666;
+  font-size: 14px;
+  font-weight: 400;
+  margin-bottom: 6px;
+}
+
+/* Flash messages inside the login card */
+.login-card .message {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.2;
+}
+.login-card .message::before {
+  flex: 0 0 auto;
+  font-size: 18px;
+  line-height: 1;
+}
+.login-card .message.error {
+  background: #fcebea;
+  color: #991b1b;
+  border: 1px solid rgba(217,83,79,0.1);
+}
+.login-card .message.error i { color: #c53030; font-size: 20px }
+.login-card .message.success {
+  background: #e7f7ed;
+  color: #0f7a3a;
+  border: 1px solid rgba(46,204,113,0.08);
+}
+.login-card .message.success i { color: #16a34a; font-size: 20px }
+.login-card .message.info {
+  background: #eef6ff;
+  color: #1f6fb8;
+  border: 1px solid rgba(100,149,237,0.08);
+}
+.login-card .message.info i { color: #2563eb; font-size: 20px }
+
+/* Message body and fade transition */
+.login-card .message i { margin-right: 0.5rem }
+.login-card .message .message-body { flex: 1 }
+.login-card .message { opacity: 0; transform: translateY(-6px); transition: opacity 220ms ease, transform 220ms ease, height 220ms ease, padding 220ms ease, margin 220ms ease }
+.login-card .message.show { opacity: 1; transform: translateY(0) }
+
+/* collapsing state used before removing the node to prevent leftover spacing */
+.login-card .message.hiding {
+  opacity: 0 !important;
+  transform: translateY(-6px) !important;
+  height: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Close button */
+.login-card .message .message-close {
+  background: transparent;
+  border: none;
+  color: inherit;
+  padding: 0.25rem;
+  margin-left: 0.5rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.login-card .message .message-close i { font-size: 14px }
+
