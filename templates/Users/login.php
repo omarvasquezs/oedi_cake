@@ -47,7 +47,9 @@ $this->assign('title', 'Iniciar Sesión');
             <?= $this->Form->end() ?>
 
             <div class="text-center mt-3">
-                <a class="text-muted small" href="#">¿No tienes una cuenta? Regístrate</a>
+                <?= $this->Html->link('¿No tienes una cuenta? Regístrate', ['action' => 'register'], [
+                    'class' => 'text-muted small'
+                ]) ?>
             </div>
         </div>
     </div>
