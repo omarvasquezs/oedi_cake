@@ -281,6 +281,13 @@
     background: rgba(255,255,255,0.08);
     color: #fff;
 }
+.sidebar-nav li a.active {
+    background: rgba(52, 152, 219, 0.2);
+    color: #fff;
+    font-weight: 500;
+    border-left: 3px solid #3498db;
+    padding-left: calc(0.75rem - 3px);
+}
 
 /* Nested details (submenu within submenu) */
 .sidebar-nav li details {
