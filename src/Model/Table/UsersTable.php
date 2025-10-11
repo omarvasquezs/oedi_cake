@@ -29,25 +29,50 @@ class UsersTable extends Table
             ->scalar('name')
             ->maxLength('name', 255)
             ->requirePresence('name', 'create')
-            ->notEmptyString('name');
+            ->notEmptyString('name', 'El nombre es requerido.');
 
         $validator
             ->scalar('username')
             ->maxLength('username', 50)
             ->requirePresence('username', 'create')
-            ->notEmptyString('username');
+            ->notEmptyString('username', 'El nombre de usuario es requerido.')
+            ->add('username', 'unique', [
+                'rule' => 'validateUnique',
+                'provider' => 'table',
+                'message' => 'Este nombre de usuario ya está en uso.'
+            ])
+            ->add('username', 'noSpaces', [
+                'rule' => function ($value, $context) {
+                    return !preg_match('/\s/', $value);
+                },
+                'message' => 'El nombre de usuario no puede contener espacios.'
+            ]);
 
         $validator
-            ->email('email')
+            ->email('email', false, 'El correo electrónico debe ser válido.')
             ->requirePresence('email', 'create')
-            ->notEmptyString('email');
+            ->notEmptyString('email', 'El correo electrónico es requerido.')
+            ->add('email', 'unique', [
+                'rule' => 'validateUnique',
+                'provider' => 'table',
+                'message' => 'Este correo electrónico ya está registrado.'
+            ]);
 
         $validator
             ->scalar('password')
             ->maxLength('password', 255)
             ->requirePresence('password', 'create')
-            ->notEmptyString('password');
+            ->notEmptyString('password', 'La contraseña es requerida.')
+            ->minLength('password', 6, 'La contraseña debe tener al menos 6 caracteres.');
 
         return $validator;
+    }
+
+    public function buildRules(\Cake\ORM\RulesChecker $rules): \Cake\ORM\RulesChecker
+    {
+        $rules->add($rules->isUnique(['username'], 'Este nombre de usuario ya está en uso.'));
+        $rules->add($rules->isUnique(['email'], 'Este correo electrónico ya está registrado.'));
+        
+        return $rules;
     }
 }
