@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Model\Entity;
@@ -15,4 +16,15 @@ class User extends Entity
 
     // Hide the password field when converting to arrays/JSON
     protected array $_hidden = ['password'];
+
+    // Automatically hash passwords when they are changed
+    // Using PASSWORD_BCRYPT to match the seeder configuration
+    protected function _setPassword(string $password): ?string
+    {
+        if (strlen($password) > 0) {
+            return password_hash($password, PASSWORD_BCRYPT);
+        }
+
+        return null;
+    }
 }
