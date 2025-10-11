@@ -229,8 +229,8 @@ class CreateInitialTables extends AbstractMigration
             ->addColumn('password', 'string', ['limit' => 255])
             ->addColumn('remember_token', 'string', ['limit' => 100, 'null' => true])
             ->addColumn('deleted_at', 'timestamp', ['null' => true, 'default' => null])
-            ->addColumn('created_at', 'timestamp', ['null' => true, 'default' => null])
-            ->addColumn('updated_at', 'timestamp', ['null' => true, 'default' => null])
+            ->addColumn('created_at', 'timestamp', ['null' => true, 'default' => 'CURRENT_TIMESTAMP'])
+            ->addColumn('updated_at', 'timestamp', ['null' => true, 'default' => 'CURRENT_TIMESTAMP', 'update' => 'CURRENT_TIMESTAMP'])
             ->addIndex(['email'], ['unique' => true])
             ->addIndex(['username'], ['unique' => true])
             ->create();
