@@ -7,6 +7,18 @@ class DashboardController extends AppController
 {
     public function index()
     {
-        // Dashboard landing page. Load data as needed in the future.
+        // Dashboard landing page - Vista General
+    }
+
+    public function lista()
+    {
+        // Dashboard Lista de Entidades
+        $this->set('title', 'Dashboard Lista de Entidades');
+    }
+
+    public function calendarioCompromisos()
+    {
+        // Calendario de Compromisos
+        $this->set('title', 'Calendario de Compromisos');
     }
 }
