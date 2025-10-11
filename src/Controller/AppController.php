@@ -62,8 +62,8 @@ class AppController extends Controller
         $controller = $this->getRequest()->getParam('controller');
         $action = $this->getRequest()->getParam('action');
 
-        // If the request is Users::login, use the clean login layout and allow access
-        if ($controller === 'Users' && $action === 'login') {
+        // If the request is Users::login or Users::register, use the clean login layout and allow access
+        if ($controller === 'Users' && ($action === 'login' || $action === 'register')) {
             $this->viewBuilder()->setLayout('login');
             return;
         }
