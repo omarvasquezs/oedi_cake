@@ -92,6 +92,70 @@ $this->assign('title', $title ?? 'Usuarios');
         background-color: #f3f4f6 !important;
         color: #666 !important;
     }
+
+    /* Utilities: inputs with icons inside */
+    .input-with-icon {
+        position: relative;
+    }
+
+    .input-with-icon .input-icon {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #666;
+        font-size: 14px;
+        pointer-events: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .input-with-icon .search-input {
+        padding-left: 2.75rem;
+        /* leave space for icon */
+    }
+
+    .input-with-icon .input-clear {
+        position: absolute;
+        right: 0.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 28px;
+        height: 28px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #999 !important;
+        text-decoration: none !important;
+        border-radius: 50% !important;
+        transition: background-color .15s, color .15s;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        line-height: 1 !important;
+        box-shadow: none !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        z-index: 3;
+    }
+
+    .input-with-icon .input-clear:hover {
+        background-color: #f3f4f6;
+        color: #666;
+    }
+
+    /* ensure anchor clear links don't show visited/background styles */
+    .input-with-icon .input-clear:visited {
+        color: #999 !important;
+        background: transparent !important;
+    }
+
+    .input-with-icon .input-clear:focus,
+    .input-with-icon .input-clear:active {
+        outline: none !important;
+        box-shadow: none !important;
+    }
 </style>
 
 <div class="users-index">
@@ -104,13 +168,13 @@ $this->assign('title', $title ?? 'Usuarios');
 
     <!-- Search -->
     <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
-        <div style="flex: 1; position: relative; <?= (!empty($filterNombre) || !empty($filterUsuario) || !empty($filterEmail) || !empty($filterRoles)) ? 'display: none;' : '' ?>" id="mainSearchContainer">
-            <form method="get" action="<?= $this->Url->build(['action' => 'index']) ?>" id="searchForm">
-                <i class="fa-solid fa-search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #666; font-size: 14px; pointer-events: none;"></i>
-                <input type="text" name="search" id="searchInput" value="<?= h($search ?? '') ?>" placeholder="Buscar usuarios..." style="width: 100%; padding: 0.7rem 2.5rem 0.7rem 2.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background: white; color: #2c3e50;">
+        <div style="flex: 1;" id="mainSearchContainer" <?= (!empty($filterNombre) || !empty($filterUsuario) || !empty($filterEmail) || !empty($filterRoles)) ? 'hidden' : '' ?>>
+            <form method="get" action="<?= $this->Url->build(['action' => 'index']) ?>" id="searchForm" class="input-with-icon">
+                <span class="input-icon"><i class="fa-solid fa-search"></i></span>
+                <input type="text" name="search" id="searchInput" value="<?= h($search ?? '') ?>" placeholder="Buscar usuarios..." class="search-input form-control" style="border: 1px solid #ddd; border-radius: 4px; font-size: 14px; background: white; color: #2c3e50;">
                 <input type="hidden" name="per_page" value="<?= $perPage ?>">
                 <?php if (!empty($search)): ?>
-                    <a href="<?= $this->Url->build(['action' => 'index', '?' => ['per_page' => $perPage]]) ?>" id="clearSearch" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: #999; text-decoration: none; cursor: pointer; padding: 0.25rem; display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; transition: all 0.2s;" title="Limpiar búsqueda">
+                    <a href="<?= $this->Url->build(['action' => 'index', '?' => ['per_page' => $perPage]]) ?>" id="clearSearch" class="input-clear" title="Limpiar búsqueda">
                         <i class="fa-solid fa-times" style="font-size: 14px;"></i>
                     </a>
                 <?php endif; ?>
@@ -137,30 +201,30 @@ $this->assign('title', $title ?? 'Usuarios');
                 <!-- Filter Row -->
                 <tr id="filterRow" style="background: white; border-bottom: 2px solid #e0e0e0; display: <?= (!empty($filterNombre) || !empty($filterUsuario) || !empty($filterEmail) || !empty($filterRoles)) ? '' : 'none' ?>;">
                     <th style="padding: 0.5rem 1rem; position: relative; vertical-align: top;">
-                        <div style="position: relative;">
-                            <input type="text" id="filterNombre" value="<?= h($filterNombre ?? '') ?>" placeholder="Filtrar Nombre" style="width: 100%; padding: 0.5rem 2rem 0.5rem 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; background: white; height: 36px;">
+                        <div class="input-with-icon" style="position: relative;">
+                            <input type="text" id="filterNombre" value="<?= h($filterNombre ?? '') ?>" placeholder="Filtrar Nombre" class="search-input" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; background: white; height: 36px;">
                             <?php if (!empty($filterNombre)): ?>
-                            <button type="button" onclick="clearFilter('filterNombre')" style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: #999; cursor: pointer; padding: 0.25rem; display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; transition: all 0.2s;" title="Limpiar">
+                            <button type="button" onclick="clearFilter('filterNombre')" class="input-clear" title="Limpiar">
                                 <i class="fa-solid fa-times" style="font-size: 12px;"></i>
                             </button>
                             <?php endif; ?>
                         </div>
                     </th>
                     <th style="padding: 0.5rem 1rem; position: relative; vertical-align: top;">
-                        <div style="position: relative;">
-                            <input type="text" id="filterUsuario" value="<?= h($filterUsuario ?? '') ?>" placeholder="Filtrar Usuario" style="width: 100%; padding: 0.5rem 2rem 0.5rem 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; background: white; height: 36px;">
+                        <div class="input-with-icon" style="position: relative;">
+                            <input type="text" id="filterUsuario" value="<?= h($filterUsuario ?? '') ?>" placeholder="Filtrar Usuario" class="search-input" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; background: white; height: 36px;">
                             <?php if (!empty($filterUsuario)): ?>
-                            <button type="button" onclick="clearFilter('filterUsuario')" style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: #999; cursor: pointer; padding: 0.25rem; display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; transition: all 0.2s;" title="Limpiar">
+                            <button type="button" onclick="clearFilter('filterUsuario')" class="input-clear" title="Limpiar">
                                 <i class="fa-solid fa-times" style="font-size: 12px;"></i>
                             </button>
                             <?php endif; ?>
                         </div>
                     </th>
                     <th style="padding: 0.5rem 1rem; position: relative; vertical-align: top;">
-                        <div style="position: relative;">
-                            <input type="text" id="filterEmail" value="<?= h($filterEmail ?? '') ?>" placeholder="Filtrar Email" style="width: 100%; padding: 0.5rem 2rem 0.5rem 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; background: white; height: 36px;">
+                        <div class="input-with-icon" style="position: relative;">
+                            <input type="text" id="filterEmail" value="<?= h($filterEmail ?? '') ?>" placeholder="Filtrar Email" class="search-input" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; background: white; height: 36px;">
                             <?php if (!empty($filterEmail)): ?>
-                            <button type="button" onclick="clearFilter('filterEmail')" style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: #999; cursor: pointer; padding: 0.25rem; display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; transition: all 0.2s;" title="Limpiar">
+                            <button type="button" onclick="clearFilter('filterEmail')" class="input-clear" title="Limpiar">
                                 <i class="fa-solid fa-times" style="font-size: 12px;"></i>
                             </button>
                             <?php endif; ?>
@@ -653,7 +717,7 @@ $this->assign('title', $title ?? 'Usuarios');
         const filterRow = document.getElementById('filterRow');
         const mainSearchContainer = document.getElementById('mainSearchContainer');
         const searchInput = document.getElementById('searchInput');
-        
+
         // Filter inputs
         const filterNombre = document.getElementById('filterNombre');
         const filterUsuario = document.getElementById('filterUsuario');
@@ -689,28 +753,28 @@ $this->assign('title', $title ?? 'Usuarios');
             // Store which input had focus
             const activeElement = document.activeElement;
             const activeInputId = (activeElement && activeElement.tagName === 'INPUT') ? activeElement.id : null;
-            
+
             if (activeInputId) {
                 sessionStorage.setItem('activeFilterInput', activeInputId);
             }
-            
+
             const url = new URL(window.location.href);
             url.searchParams.delete('search'); // Remove main search
-            
+
             if (filterNombre.value) url.searchParams.set('filter_nombre', filterNombre.value);
             else url.searchParams.delete('filter_nombre');
-            
+
             if (filterUsuario.value) url.searchParams.set('filter_usuario', filterUsuario.value);
             else url.searchParams.delete('filter_usuario');
-            
+
             if (filterEmail.value) url.searchParams.set('filter_email', filterEmail.value);
             else url.searchParams.delete('filter_email');
-            
+
             if (selectedRoles.length > 0) url.searchParams.set('filter_roles', selectedRoles.join(','));
             else url.searchParams.delete('filter_roles');
-            
+
             url.searchParams.set('page', 1); // Reset to first page
-            
+
             window.location.href = url.toString();
         }
 
@@ -741,7 +805,7 @@ $this->assign('title', $title ?? 'Usuarios');
         rolesContainer.addEventListener('click', function(e) {
             // Don't trigger if clicking on a tag's X button
             if (e.target.classList.contains('fa-times')) return;
-            
+
             rolesInput.style.opacity = '1';
             rolesInput.style.pointerEvents = 'auto';
             rolesInput.focus();
@@ -800,12 +864,12 @@ $this->assign('title', $title ?? 'Usuarios');
 
         function addRoleTag(role) {
             if (selectedRoles.includes(role)) return;
-            
+
             selectedRoles.push(role);
             updateRolesTags();
             rolesInput.value = '';
             showRolesDropdown();
-            
+
             // Apply filters immediately when a role is added
             applyFilters();
         }
@@ -813,7 +877,7 @@ $this->assign('title', $title ?? 'Usuarios');
         function removeRoleTag(role) {
             selectedRoles = selectedRoles.filter(r => r !== role);
             updateRolesTags();
-            
+
             // Apply filters immediately when a role is removed
             applyFilters();
         }
@@ -825,12 +889,12 @@ $this->assign('title', $title ?? 'Usuarios');
                     <i class="fa-solid fa-times" onclick="removeRoleTagByName('${role}')" style="cursor: pointer; font-size: 10px;"></i>
                 </span>`
             ).join('');
-            
+
             // Clear container and add tags
             const placeholder = rolesPlaceholder;
             rolesContainer.innerHTML = '';
             rolesContainer.appendChild(placeholder);
-            
+
             if (selectedRoles.length === 0) {
                 placeholder.style.display = 'block';
             } else {
