@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -14,6 +15,7 @@ declare(strict_types=1);
  * @since     0.2.9
  * @license   https://opensource.org/licenses/mit-license.php MIT License
  */
+
 namespace App\Controller;
 
 use Cake\Controller\Controller;
@@ -71,7 +73,7 @@ class AppController extends Controller
         // For all other pages, select the intranet layout and enforce authentication
         $this->viewBuilder()->setLayout('intranet');
 
-        // Identity detection: Authentication middleware attaches 'identity', fallback to session
+        // Accept either the Authentication plugin identity or our manual session key
         $identity = $this->getRequest()->getAttribute('identity');
         $sessionUser = $this->getRequest()->getSession()->read('Auth.User');
 
