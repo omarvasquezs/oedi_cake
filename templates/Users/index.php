@@ -116,6 +116,10 @@ $this->assign('title', $title ?? 'Usuarios');
         /* leave space for icon */
     }
 
+    .search-input {
+        margin-bottom: 0;
+    }
+
     .input-with-icon .input-clear {
         position: absolute;
         right: 0.5rem;
@@ -230,7 +234,7 @@ $this->assign('title', $title ?? 'Usuarios');
                             <?php endif; ?>
                         </div>
                     </th>
-                    <th style="padding: 0.5rem 1rem; position: relative; vertical-align: top;">
+                    <th style="padding: 0.5rem 1rem; position: relative; vertical-align: middle;">
                         <div id="rolesFilterContainer" style="position: relative;">
                             <div id="selectedRolesTags" style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; min-height: 36px; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: text; position: relative;">
                                 <span id="rolesPlaceholder" style="color: #999; font-size: 13px; position: absolute; left: 0.5rem; pointer-events: none;">Buscar roles...</span>
