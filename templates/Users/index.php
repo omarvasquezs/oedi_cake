@@ -160,6 +160,24 @@ $this->assign('title', $title ?? 'Usuarios');
         outline: none !important;
         box-shadow: none !important;
     }
+
+    /* Make the table area stretch so pagination/footer stays at bottom even with few rows */
+    .users-index .table-wrapper {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 40vh;
+        /* fallback minimum */
+    }
+
+    .users-index table {
+        width: 100%;
+    }
+
+    /* Ensure roles dropdown appears above other elements and can flip */
+    #rolesDropdown {
+        will-change: transform;
+    }
 </style>
 
 <div class="users-index">
@@ -190,7 +208,7 @@ $this->assign('title', $title ?? 'Usuarios');
     </div>
 
     <!-- Table -->
-    <div style="background: white; border-radius: 8px; border: 1px solid #e0e0e0; overflow: hidden;">
+    <div class="table-wrapper" style="background: white; border-radius: 8px; border: 1px solid #e0e0e0; overflow: hidden;">
         <table style="width: 100%; border-collapse: collapse;">
             <thead>
                 <tr style="background: #f8f9fa; border-bottom: 2px solid #e0e0e0;">
@@ -208,9 +226,9 @@ $this->assign('title', $title ?? 'Usuarios');
                         <div class="input-with-icon" style="position: relative;">
                             <input type="text" id="filterNombre" value="<?= h($filterNombre ?? '') ?>" placeholder="Filtrar Nombre" class="search-input" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; background: white; height: 36px;">
                             <?php if (!empty($filterNombre)): ?>
-                            <button type="button" onclick="clearFilter('filterNombre')" class="input-clear" title="Limpiar">
-                                <i class="fa-solid fa-times" style="font-size: 12px;"></i>
-                            </button>
+                                <button type="button" onclick="clearFilter('filterNombre')" class="input-clear" title="Limpiar">
+                                    <i class="fa-solid fa-times" style="font-size: 12px;"></i>
+                                </button>
                             <?php endif; ?>
                         </div>
                     </th>
@@ -218,9 +236,9 @@ $this->assign('title', $title ?? 'Usuarios');
                         <div class="input-with-icon" style="position: relative;">
                             <input type="text" id="filterUsuario" value="<?= h($filterUsuario ?? '') ?>" placeholder="Filtrar Usuario" class="search-input" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; background: white; height: 36px;">
                             <?php if (!empty($filterUsuario)): ?>
-                            <button type="button" onclick="clearFilter('filterUsuario')" class="input-clear" title="Limpiar">
-                                <i class="fa-solid fa-times" style="font-size: 12px;"></i>
-                            </button>
+                                <button type="button" onclick="clearFilter('filterUsuario')" class="input-clear" title="Limpiar">
+                                    <i class="fa-solid fa-times" style="font-size: 12px;"></i>
+                                </button>
                             <?php endif; ?>
                         </div>
                     </th>
@@ -228,19 +246,19 @@ $this->assign('title', $title ?? 'Usuarios');
                         <div class="input-with-icon" style="position: relative;">
                             <input type="text" id="filterEmail" value="<?= h($filterEmail ?? '') ?>" placeholder="Filtrar Email" class="search-input" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; background: white; height: 36px;">
                             <?php if (!empty($filterEmail)): ?>
-                            <button type="button" onclick="clearFilter('filterEmail')" class="input-clear" title="Limpiar">
-                                <i class="fa-solid fa-times" style="font-size: 12px;"></i>
-                            </button>
+                                <button type="button" onclick="clearFilter('filterEmail')" class="input-clear" title="Limpiar">
+                                    <i class="fa-solid fa-times" style="font-size: 12px;"></i>
+                                </button>
                             <?php endif; ?>
                         </div>
                     </th>
                     <th style="padding: 0.5rem 1rem; position: relative; vertical-align: middle;">
                         <div id="rolesFilterContainer" style="position: relative;">
-                            <div id="selectedRolesTags" style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; min-height: 36px; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: text; position: relative;">
-                                <span id="rolesPlaceholder" style="color: #999; font-size: 13px; position: absolute; left: 0.5rem; pointer-events: none;">Buscar roles...</span>
+                            <div id="selectedRolesTags" style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; min-height: 36px; padding: 0.25rem 0.5rem; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: text; position: relative;">
+                                <span id="rolesPlaceholder" style="color: #999; font-size: 13px; pointer-events: none;">Buscar roles...</span>
+                                <input type="text" id="filterRolesInput" style="border: none; outline: none; background: transparent; font-size: 13px; min-width: 80px; margin-left: 0.5rem;" placeholder="" aria-label="Buscar roles">
                             </div>
-                            <input type="text" id="filterRolesInput" style="position: absolute; top: 50%; left: 0.5rem; transform: translateY(-50%); border: none; outline: none; background: transparent; font-size: 13px; width: calc(100% - 1rem); opacity: 0; pointer-events: none;">
-                            <div id="rolesDropdown" style="position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-radius: 4px; max-height: 200px; overflow-y: auto; z-index: 1000; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 2px;"></div>
+                            <div id="rolesDropdown" style="position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-radius: 4px; max-height: 200px; overflow-y: auto; z-index: 1050; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 2px;"></div>
                         </div>
                     </th>
                     <th style="padding: 0.5rem 1rem;">
@@ -293,7 +311,7 @@ $this->assign('title', $title ?? 'Usuarios');
     </div>
 
     <!-- Pagination -->
-    <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-top: 1.5rem; padding: 0 0.5rem;">
+    <div class="pagination-section" style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-top: 1.5rem; padding: 0 0.5rem;">
         <!-- Items per page selector (left) -->
         <div style="display: flex; align-items: center; gap: 0.5rem;">
             <span style="color: #666; font-size: 14px; line-height: 1;">Mostrar:</span>
@@ -852,6 +870,24 @@ $this->assign('title', $title ?? 'Usuarios');
 
             rolesDropdown.style.display = 'block';
 
+            // If the dropdown would be clipped by viewport bottom, flip it above the container
+            const rect = rolesDropdown.getBoundingClientRect();
+            const containerRect = rolesContainer.getBoundingClientRect();
+            const spaceBelow = window.innerHeight - containerRect.bottom;
+            const spaceAbove = containerRect.top;
+            if (rect.height > spaceBelow && spaceAbove > rect.height) {
+                // show above
+                rolesDropdown.style.top = 'auto';
+                rolesDropdown.style.bottom = '100%';
+                rolesDropdown.style.marginTop = '0';
+                rolesDropdown.style.marginBottom = '6px';
+            } else {
+                rolesDropdown.style.top = '100%';
+                rolesDropdown.style.bottom = 'auto';
+                rolesDropdown.style.marginTop = '2px';
+                rolesDropdown.style.marginBottom = '0';
+            }
+
             // Add click handlers to options
             document.querySelectorAll('.role-option').forEach(option => {
                 option.addEventListener('mouseenter', function() {
@@ -901,9 +937,25 @@ $this->assign('title', $title ?? 'Usuarios');
 
             if (selectedRoles.length === 0) {
                 placeholder.style.display = 'block';
+                // ensure input is visible after placeholder
+                rolesContainer.appendChild(rolesInput);
+                rolesInput.style.opacity = '1';
+                rolesInput.style.pointerEvents = 'auto';
             } else {
                 placeholder.style.display = 'none';
                 rolesContainer.insertAdjacentHTML('beforeend', tagsHtml);
+                // re-append the input after tags so caret is after tags
+                rolesContainer.appendChild(rolesInput);
+                rolesInput.style.opacity = '1';
+                rolesInput.style.pointerEvents = 'auto';
+                // focus and move caret to end so user can type after tags
+                try {
+                    rolesInput.focus();
+                    const len = rolesInput.value ? rolesInput.value.length : 0;
+                    rolesInput.setSelectionRange(len, len);
+                } catch (e) {
+                    // ignore if cannot focus
+                }
             }
         }
 
