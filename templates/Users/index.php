@@ -162,21 +162,71 @@ $this->assign('title', $title ?? 'Usuarios');
     }
 
     /* Make the table area stretch so pagination/footer stays at bottom even with few rows */
-    .users-index .table-wrapper {
+    .users-index {
         display: flex;
         flex-direction: column;
-        flex: 1 1 auto;
-        min-height: 40vh;
-        /* fallback minimum */
+        height: calc(100vh - var(--topbar-height) - 4rem);
     }
 
-    .users-index table {
-        width: 100%;
+    .users-index .table-wrapper {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        min-height: 0;
+    }
+
+    .pagination-section {
+        flex-shrink: 0;
     }
 
     /* Ensure roles dropdown appears above other elements and can flip */
     #rolesDropdown {
         will-change: transform;
+    }
+
+    /* --- ESTILOS DE ACCIONES (CON CORRECCIÓN DE MARGEN) --- */
+    .action-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border: 1px solid #dadce0;
+        border-radius: 50%;
+        background-color: #ffffff;
+        text-decoration: none !important;
+        transition: background-color 0.2s ease;
+        padding: 0;
+        margin: 0;
+        /* <-- ESTA ES LA LÍNEA QUE SE AÑADIÓ */
+    }
+
+    .action-icon:hover {
+        background-color: #f8f9fa;
+    }
+
+    .action-icon i {
+        font-size: 15px;
+        line-height: 1;
+    }
+
+    /* Colores específicos de los íconos de la imagen de referencia */
+    .icon-view {
+        color: #80868b;
+    }
+
+    .icon-edit {
+        color: #4285F4;
+    }
+
+    .icon-delete {
+        color: #DB4437;
+    }
+
+    /* Asegura que los botones <button> se vean bien */
+    button.action-icon {
+        cursor: pointer;
+        box-shadow: none !important;
+        outline: none !important;
     }
 </style>
 
@@ -282,16 +332,21 @@ $this->assign('title', $title ?? 'Usuarios');
                                     <span style="color: #95a5a6; font-size: 12px; font-style: italic;">Sin roles</span>
                                 <?php endif; ?>
                             </td>
-                            <td style="padding: 1rem; font-size: 14px;">
-                                <button type="button" data-bs-toggle="modal" data-bs-target="#editarUsuarioModal" onclick="loadUserData(<?= h(json_encode($user)) ?>)" style="background: transparent; border: none; color: #3498db; cursor: pointer; padding: 0.25rem 0.5rem; margin: 0 0.25rem;" title="Editar">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </button>
-                                <button type="button" data-bs-toggle="modal" data-bs-target="#cambiarClaveModal" onclick="loadUserForPassword(<?= $user->id ?>, '<?= h($user->name) ?>')" style="background: transparent; border: none; color: #f39c12; cursor: pointer; padding: 0.25rem 0.5rem; margin: 0 0.25rem;" title="Cambiar Contraseña">
-                                    <i class="fa-solid fa-key"></i>
-                                </button>
-                                <button onclick="confirmDelete(<?= $user->id ?>, '<?= h($user->name) ?>')" style="background: transparent; border: none; color: #e74c3c; cursor: pointer; padding: 0.25rem 0.5rem; margin: 0 0.25rem;" title="Eliminar">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
+                            <td style="padding: 1rem; vertical-align: middle;">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <button type="button" class="action-icon" title="Ver" data-row='<?= json_encode($user) ?>' onclick="openViewModal(this)">
+                                        <i class="fa-solid fa-eye icon-view"></i>
+                                    </button>
+                                    <button type="button" class="action-icon" title="Editar" data-row='<?= json_encode($user) ?>' onclick="openEditModal(this)">
+                                        <i class="fa-solid fa-pen-to-square icon-edit"></i>
+                                    </button>
+                                    <button type="button" data-bs-toggle="modal" data-bs-target="#cambiarClaveModal" onclick="loadUserForPassword(<?= $user->id ?>, '<?= h($user->name) ?>')" style="background: transparent; border: none; color: #f39c12; cursor: pointer; padding: 0.25rem 0.5rem; margin: 0 0.25rem;" title="Cambiar Contraseña">
+                                        <i class="fa-solid fa-key"></i>
+                                    </button>
+                                    <button onclick="confirmDelete(<?= $user->id ?>, '<?= h($user->name) ?>')" class="action-icon" title="Eliminar">
+                                        <i class="fa-solid fa-trash icon-delete"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -412,7 +467,7 @@ $this->assign('title', $title ?? 'Usuarios');
                             'label' => false,
                             'required' => true,
                             'style' => 'width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem;',
-                            'onInput' => 'this.value = this.value.replace(/\s/g, "")'
+                            'onInput' => 'this.value = this.value.replace(/\\s/g, "")'
                         ]) ?>
                         <p style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
                             <i class="fa-solid fa-circle-info"></i> Sin espacios
@@ -508,7 +563,6 @@ $this->assign('title', $title ?? 'Usuarios');
                             'class' => 'form-control',
                             'id' => 'editUserName',
                             'placeholder' => 'Ingrese el nombre',
-                            'value' => 'Mario',
                             'label' => false,
                             'style' => 'width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem;'
                         ]) ?>
@@ -520,9 +574,8 @@ $this->assign('title', $title ?? 'Usuarios');
                             'class' => 'form-control',
                             'id' => 'editUserUsername',
                             'placeholder' => 'Ingrese el nombre de usuario',
-                            'value' => 'mario',
                             'label' => false,
-                            'oninput' => 'this.value = this.value.replace(/\s/g, "")',
+                            'oninput' => 'this.value = this.value.replace(/\\s/g, "")',
                             'style' => 'width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem;'
                         ]) ?>
                         <small class="text-muted" style="font-size: 0.75rem; color: #6b7280;">Sin espacios</small>
@@ -534,7 +587,6 @@ $this->assign('title', $title ?? 'Usuarios');
                             'class' => 'form-control',
                             'id' => 'editUserEmail',
                             'placeholder' => 'Ingrese el email',
-                            'value' => 'mario@gmail.com',
                             'label' => false,
                             'style' => 'width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem;'
                         ]) ?>
@@ -561,6 +613,28 @@ $this->assign('title', $title ?? 'Usuarios');
                 </div>
             </div>
             <?= $this->Form->end() ?>
+        </div>
+    </div>
+</div>
+
+<!-- View Modal -->
+<div class="modal fade" id="verUsuarioModal" tabindex="-1" aria-labelledby="ver-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ver-modal-title">Detalles del Usuario</h5>
+                <button type="button" class="btn-close-dark" data-bs-dismiss="modal" aria-label="Cerrar">
+                    <i class="fa-solid fa-xmark" style="font-size:14px;"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="view-user-details" class="container-fluid">
+                    <!-- Details will be populated by JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
         </div>
     </div>
 </div>
@@ -622,8 +696,69 @@ $this->assign('title', $title ?? 'Usuarios');
 </div>
 
 <script>
-    // Función para cargar datos del usuario en el modal de editar
-    function loadUserData(user) {
+    window.openViewModal = function(btn) {
+        if (!btn) return;
+        var data = btn.getAttribute('data-row');
+        if (!data) return;
+        try {
+            var obj = JSON.parse(data);
+        } catch (e) {
+            console.error('Failed to parse row data for view modal', e);
+            return;
+        }
+
+        var modalEl = document.getElementById('verUsuarioModal');
+        if (!modalEl) return;
+
+        var detailsContainer = modalEl.querySelector('#view-user-details');
+        if (!detailsContainer) return;
+
+        // Two-column layout: left and right columns of label/value pairs
+        detailsContainer.innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <dl class="row mb-0">
+                        <dt class="col-5 py-4">Nombre</dt>
+                        <dd class="col-7 py-4">${obj.name || 'N/A'}</dd>
+
+                        <dt class="col-5 py-4">Usuario</dt>
+                        <dd class="col-7 py-4">${obj.username || 'N/A'}</dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <dl class="row mb-0">
+                        <dt class="col-5 py-4">Email</dt>
+                        <dd class="col-7 py-4">${obj.email || 'N/A'}</dd>
+
+                        <dt class="col-5 py-4">Roles</dt>
+                        <dd class="col-7 py-4">${obj.roles ? obj.roles.join(', ') : 'N/A'}</dd>
+                    </dl>
+                </div>
+            </div>
+        `;
+
+        try {
+            var modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        } catch (e) {
+            console.error('Bootstrap modal show failed', e);
+        }
+    };
+
+    window.openEditModal = function(btn) {
+        if (!btn) return;
+        var data = btn.getAttribute('data-row');
+        if (!data) return;
+        try {
+            var user = JSON.parse(data);
+        } catch (e) {
+            console.error('Failed to parse row data for edit modal', e);
+            return;
+        }
+
+        var modalEl = document.getElementById('editarUsuarioModal');
+        if (!modalEl) return;
+
         document.getElementById('editUserName').value = user.name || '';
         document.getElementById('editUserUsername').value = user.username || '';
         document.getElementById('editUserEmail').value = user.email || '';
@@ -636,7 +771,14 @@ $this->assign('title', $title ?? 'Usuarios');
 
         // Actualizar la acción del formulario con el ID del usuario
         document.getElementById('editarUsuarioForm').action = '<?= $this->Url->build(['action' => 'edit']) ?>/' + user.id;
-    }
+
+        try {
+            var modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        } catch (e) {
+            console.error('Bootstrap modal show failed', e);
+        }
+    };
 
     // Función para cargar datos de usuario en el modal de cambiar contraseña
     function loadUserForPassword(userId, userName) {
@@ -656,7 +798,7 @@ $this->assign('title', $title ?? 'Usuarios');
 
     // Función para confirmar eliminación
     function confirmDelete(userId, userName) {
-        if (confirm('¿Está seguro de que desea eliminar al usuario "' + userName + '"?\n\nEsta acción no se puede deshacer.')) {
+        if (confirm('¿Está seguro de que desea eliminar al usuario "' + userName + '"?\\n\\nEsta acción no se puede deshacer.')) {
             // Crear formulario para enviar DELETE request
             const form = document.createElement('form');
             form.method = 'POST';
