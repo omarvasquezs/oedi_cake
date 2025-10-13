@@ -12,7 +12,7 @@ class EntidadesController extends AppController
 
         // Load municipalidades and paginate
         $municipalidadesTable = $this->fetchTable('Municipalidades');
-        $query = $municipalidadesTable->find()->order(['nombre' => 'ASC']);
+        $query = $municipalidadesTable->find()->orderBy(['nombre' => 'ASC']);
 
         $perPage = $this->request->getQuery('per_page', 10);
         $perPage = in_array($perPage, [10, 20, 40, 50, 100]) ? $perPage : 10;
@@ -60,7 +60,7 @@ class EntidadesController extends AppController
             $this->set('newMunicipalidad', $entity);
 
             // Load municipalidades list as in index
-            $query = $municipalidadesTable->find()->order(['nombre' => 'ASC']);
+            $query = $municipalidadesTable->find()->orderBy(['nombre' => 'ASC']);
             $perPage = $this->request->getQuery('per_page', 10);
             $perPage = in_array($perPage, [10, 20, 40, 50, 100]) ? $perPage : 10;
             $this->paginate = ['limit' => $perPage];
@@ -111,8 +111,7 @@ class EntidadesController extends AppController
         $this->Flash->error('No se pudo actualizar la municipalidad. Revisa los datos.');
         $this->set('editMunicipalidad', $entity);
 
-        // reload list
-        $query = $municipalidadesTable->find()->order(['nombre' => 'ASC']);
+        $query = $municipalidadesTable->find()->orderBy(['nombre' => 'ASC']);
         $perPage = $this->request->getQuery('per_page', 10);
         $perPage = in_array($perPage, [10, 20, 40, 50, 100]) ? $perPage : 10;
         $this->paginate = ['limit' => $perPage];
