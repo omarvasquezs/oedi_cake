@@ -14,6 +14,46 @@ class EntidadesController extends AppController
         $municipalidadesTable = $this->fetchTable('Municipalidades');
         $query = $municipalidadesTable->find()->orderBy(['nombre' => 'ASC']);
 
+        // Handle search
+        $search = $this->request->getQuery('search');
+        if ($search) {
+            $query->where([
+                'OR' => [
+                    'nombre LIKE' => '%' . $search . '%',
+                    'departamento LIKE' => '%' . $search . '%',
+                    'provincia LIKE' => '%' . $search . '%',
+                    'distrito LIKE' => '%' . $search . '%',
+                    'ubigeo LIKE' => '%' . $search . '%',
+                ]
+            ]);
+        }
+
+        // Handle column filters
+        $filterNombre = $this->request->getQuery('filter_nombre');
+        if ($filterNombre) {
+            $query->where(['nombre LIKE' => '%' . $filterNombre . '%']);
+        }
+
+        $filterDepartamento = $this->request->getQuery('filter_departamento');
+        if ($filterDepartamento) {
+            $query->where(['departamento LIKE' => '%' . $filterDepartamento . '%']);
+        }
+
+        $filterProvincia = $this->request->getQuery('filter_provincia');
+        if ($filterProvincia) {
+            $query->where(['provincia LIKE' => '%' . $filterProvincia . '%']);
+        }
+
+        $filterDistrito = $this->request->getQuery('filter_distrito');
+        if ($filterDistrito) {
+            $query->where(['distrito LIKE' => '%' . $filterDistrito . '%']);
+        }
+
+        $filterNivel = $this->request->getQuery('filter_nivel');
+        if ($filterNivel) {
+            $query->where(['nivel LIKE' => '%' . $filterNivel . '%']);
+        }
+
         $perPage = $this->request->getQuery('per_page', 10);
         $perPage = in_array($perPage, [10, 20, 40, 50, 100]) ? $perPage : 10;
 
@@ -23,7 +63,16 @@ class EntidadesController extends AppController
 
         $municipalidades = $this->paginate($query);
 
-        $this->set(compact('municipalidades', 'perPage'));
+        $this->set(compact(
+            'municipalidades',
+            'perPage',
+            'search',
+            'filterNombre',
+            'filterDepartamento',
+            'filterProvincia',
+            'filterDistrito',
+            'filterNivel'
+        ));
     }
 
     public function addMunicipalidad()
