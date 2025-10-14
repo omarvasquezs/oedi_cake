@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @var \App\View\AppView $this
  * @var \Cake\Collection\CollectionInterface $estados
@@ -7,25 +8,110 @@ $this->assign('title', $title ?? 'Estados de Convenio');
 ?>
 
 <style>
-    .estados-convenio-index { display:flex; flex-direction:column; height: calc(100vh - var(--topbar-height) - 4rem); }
-    .estados-convenio-index .table-wrapper { flex:1 1 auto; overflow-y:auto; min-height:0; }
-    .pagination-section { flex-shrink:0; }
-    .input-with-icon { position:relative; }
-    .input-with-icon .input-icon { position:absolute; left:.75rem; top:50%; transform:translateY(-50%); color:#666; font-size:14px; pointer-events:none; display:inline-flex; align-items:center; justify-content:center; }
-    .input-with-icon .search-input { padding-left:2.75rem; margin-bottom:0; }
-    .input-with-icon .input-clear { position:absolute; right:.5rem; top:50%; transform:translateY(-50%); width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; color:#999!important; text-decoration:none!important; border-radius:50%!important; transition:background-color .15s, color .15s; background:transparent!important; border:none!important; padding:0!important; line-height:1!important; box-shadow:none!important; z-index:3; }
-    .input-with-icon .input-clear:hover { background:#f3f4f6; color:#666; }
-    .action-icon { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border:1px solid #dadce0; border-radius:50%; background:#fff; text-decoration:none!important; transition:background-color .2s ease; padding:0; margin:0; }
-    .action-icon:hover { background:#f8f9fa; }
-    .icon-edit { color:#4285F4; }
-    .icon-delete { color:#DB4437; }
+    .estados-convenio-index {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - var(--topbar-height) - 4rem);
+    }
+
+    .estados-convenio-index .table-wrapper {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        min-height: 0;
+    }
+
+    .pagination-section {
+        flex-shrink: 0;
+    }
+
+    .input-with-icon {
+        position: relative;
+    }
+
+    .input-with-icon .input-icon {
+        position: absolute;
+        left: .75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #666;
+        font-size: 14px;
+        pointer-events: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .input-with-icon .search-input {
+        padding-left: 2.75rem;
+        margin-bottom: 0;
+    }
+
+    .input-with-icon .input-clear {
+        position: absolute;
+        right: .5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 28px;
+        height: 28px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #999 !important;
+        text-decoration: none !important;
+        border-radius: 50% !important;
+        transition: background-color .15s, color .15s;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        line-height: 1 !important;
+        box-shadow: none !important;
+        z-index: 3;
+    }
+
+    .input-with-icon .input-clear:hover {
+        background: #f3f4f6;
+        color: #666;
+    }
+
+    .action-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border: 1px solid #dadce0;
+        border-radius: 50%;
+        background: #fff;
+        text-decoration: none !important;
+        transition: background-color .2s ease;
+        padding: 0;
+        margin: 0;
+    }
+
+    .action-icon:hover {
+        background: #f8f9fa;
+    }
+
+    .icon-edit {
+        color: #4285F4;
+    }
+
+    .icon-delete {
+        color: #DB4437;
+    }
+
     #addEstadoModal .modal-content .form-control,
     #addEstadoModal .modal-content .btn,
     #editEstadoModal .modal-content .form-control,
-    #editEstadoModal .modal-content .btn { font-size:16px; }
+    #editEstadoModal .modal-content .btn {
+        font-size: 16px;
+    }
+
     #addEstadoModal textarea,
-    #editEstadoModal textarea { min-height:120px; }
-}</style>
+    #editEstadoModal textarea {
+        min-height: 120px;
+    }
+</style>
 
 <div class="estados-convenio-index">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;">
@@ -180,10 +266,16 @@ $this->assign('title', $title ?? 'Estados de Convenio');
         if (searchInput) {
             searchInput.addEventListener('input', function() {
                 clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(function() { searchForm.submit(); }, 500);
+                searchTimeout = setTimeout(function() {
+                    searchForm.submit();
+                }, 500);
             });
             searchInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') { e.preventDefault(); clearTimeout(searchTimeout); searchForm.submit(); }
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    clearTimeout(searchTimeout);
+                    searchForm.submit();
+                }
             });
         }
     });
@@ -223,7 +315,9 @@ $this->assign('title', $title ?? 'Estados de Convenio');
             if (input) {
                 input.addEventListener('input', function() {
                     clearTimeout(filterTimeout);
-                    filterTimeout = setTimeout(function() { applyFilters(); }, 500);
+                    filterTimeout = setTimeout(function() {
+                        applyFilters();
+                    }, 500);
                 });
             }
         });
@@ -234,7 +328,11 @@ $this->assign('title', $title ?? 'Estados de Convenio');
         form.setAttribute('action', "<?= $this->Url->build(['controller' => 'EstadosConvenio', 'action' => 'edit']) ?>/" + e.id_estado_convenio);
         document.getElementById('edit-id').value = e.id_estado_convenio;
         document.getElementById('edit-descripcion').value = e.descripcion || '';
-        try { new bootstrap.Modal(document.getElementById('editEstadoModal')).show(); } catch (err) { console.error(err); }
+        try {
+            new bootstrap.Modal(document.getElementById('editEstadoModal')).show();
+        } catch (err) {
+            console.error(err);
+        }
     }
 
     function changePerPage(perPage) {
