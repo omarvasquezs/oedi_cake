@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @var \App\View\AppView $this
  * @var \Cake\Collection\CollectionInterface $sectores
@@ -7,25 +8,110 @@ $this->assign('title', $title ?? 'Sectores');
 ?>
 
 <style>
-    .sectores-index { display: flex; flex-direction: column; height: calc(100vh - var(--topbar-height) - 4rem); }
-    .sectores-index .table-wrapper { flex: 1 1 auto; overflow-y: auto; min-height: 0; }
-    .pagination-section { flex-shrink: 0; }
-    .input-with-icon { position: relative; }
-    .input-with-icon .input-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #666; font-size: 14px; pointer-events: none; display: inline-flex; align-items: center; justify-content: center; }
-    .input-with-icon .search-input { padding-left: 2.75rem; margin-bottom: 0; }
-    .input-with-icon .input-clear { position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; color: #999 !important; text-decoration: none !important; border-radius: 50% !important; transition: background-color .15s, color .15s; background: transparent !important; border: none !important; padding: 0 !important; line-height: 1 !important; box-shadow: none !important; z-index: 3; }
-    .input-with-icon .input-clear:hover { background-color: #f3f4f6; color: #666; }
-    .action-icon { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: 1px solid #dadce0; border-radius: 50%; background: #fff; text-decoration: none !important; transition: background-color .2s ease; padding: 0; margin: 0; }
-    .action-icon:hover { background: #f8f9fa; }
-    .icon-edit { color: #4285F4; }
-    .icon-delete { color: #DB4437; }
+    .sectores-index {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - var(--topbar-height) - 4rem);
+    }
+
+    .sectores-index .table-wrapper {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        min-height: 0;
+    }
+
+    .pagination-section {
+        flex-shrink: 0;
+    }
+
+    .input-with-icon {
+        position: relative;
+    }
+
+    .input-with-icon .input-icon {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #666;
+        font-size: 14px;
+        pointer-events: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .input-with-icon .search-input {
+        padding-left: 2.75rem;
+        margin-bottom: 0;
+    }
+
+    .input-with-icon .input-clear {
+        position: absolute;
+        right: 0.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 28px;
+        height: 28px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #999 !important;
+        text-decoration: none !important;
+        border-radius: 50% !important;
+        transition: background-color .15s, color .15s;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        line-height: 1 !important;
+        box-shadow: none !important;
+        z-index: 3;
+    }
+
+    .input-with-icon .input-clear:hover {
+        background-color: #f3f4f6;
+        color: #666;
+    }
+
+    .action-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border: 1px solid #dadce0;
+        border-radius: 50%;
+        background: #fff;
+        text-decoration: none !important;
+        transition: background-color .2s ease;
+        padding: 0;
+        margin: 0;
+    }
+
+    .action-icon:hover {
+        background: #f8f9fa;
+    }
+
+    .icon-edit {
+        color: #4285F4;
+    }
+
+    .icon-delete {
+        color: #DB4437;
+    }
+
     #addSectorModal .modal-content .form-control,
     #addSectorModal .modal-content .btn,
     #editSectorModal .modal-content .form-control,
-    #editSectorModal .modal-content .btn { font-size: 16px; }
+    #editSectorModal .modal-content .btn {
+        font-size: 16px;
+    }
+
     #addSectorModal textarea,
-    #editSectorModal textarea { min-height: 120px; }
-  </style>
+    #editSectorModal textarea {
+        min-height: 120px;
+    }
+</style>
 
 <div class="sectores-index">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;">
