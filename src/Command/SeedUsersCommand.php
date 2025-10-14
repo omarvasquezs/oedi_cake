@@ -39,7 +39,7 @@ class SeedUsersCommand extends Command
     public function execute(Arguments $args, ConsoleIo $io)
     {
         $io->out('Iniciando la creación de 200 usuarios de prueba...');
-        
+
         $usersTable = TableRegistry::getTableLocator()->get('Users');
         $rolesTable = TableRegistry::getTableLocator()->get('Roles');
         $modelHasRolesTable = TableRegistry::getTableLocator()->get('ModelHasRoles');
@@ -51,6 +51,7 @@ class SeedUsersCommand extends Command
 
         if (!$usuarioRole) {
             $io->error('No se encontró el rol "usuario". Asegúrate de haber ejecutado el seeder de roles.');
+
             return static::CODE_ERROR;
         }
 
@@ -58,11 +59,11 @@ class SeedUsersCommand extends Command
 
         // Nombres de ejemplo
         $nombres = [
-            'Juan', 'María', 'Carlos', 'Ana', 'Luis', 'Carmen', 'José', 'Laura', 
+            'Juan', 'María', 'Carlos', 'Ana', 'Luis', 'Carmen', 'José', 'Laura',
             'Francisco', 'Isabel', 'Antonio', 'Dolores', 'Manuel', 'Pilar', 'David',
             'Teresa', 'Javier', 'Rosa', 'Daniel', 'Antonia', 'Rafael', 'Francisca',
             'Miguel', 'Cristina', 'Ángel', 'Josefa', 'Alejandro', 'Lucía', 'Fernando',
-            'Mercedes', 'Pablo', 'Elena', 'Sergio', 'Marta', 'Jorge', 'Sara'
+            'Mercedes', 'Pablo', 'Elena', 'Sergio', 'Marta', 'Jorge', 'Sara',
         ];
 
         $apellidos = [
@@ -71,7 +72,7 @@ class SeedUsersCommand extends Command
             'Díaz', 'Moreno', 'Muñoz', 'Álvarez', 'Romero', 'Alonso', 'Gutiérrez',
             'Navarro', 'Torres', 'Domínguez', 'Vázquez', 'Ramos', 'Gil', 'Ramírez',
             'Serrano', 'Blanco', 'Molina', 'Morales', 'Suárez', 'Ortega', 'Delgado',
-            'Castro', 'Ortiz', 'Rubio', 'Marín', 'Sanz', 'Iglesias'
+            'Castro', 'Ortiz', 'Rubio', 'Marín', 'Sanz', 'Iglesias',
         ];
 
         $createdCount = 0;
@@ -88,7 +89,7 @@ class SeedUsersCommand extends Command
             $existingUser = $usersTable->find()
                 ->where(['OR' => [
                     ['email' => $email],
-                    ['username' => $username]
+                    ['username' => $username],
                 ]])
                 ->first();
 
@@ -103,7 +104,7 @@ class SeedUsersCommand extends Command
                 'name' => $nombre,
                 'username' => $username,
                 'email' => $email,
-                'password' => $password
+                'password' => $password,
             ]);
 
             if ($usersTable->save($user)) {
@@ -111,7 +112,7 @@ class SeedUsersCommand extends Command
                 $modelHasRole = $modelHasRolesTable->newEntity([
                     'role_id' => $usuarioRole->id,
                     'model_type' => 'App\\Model\\Entity\\User',
-                    'model_id' => $user->id
+                    'model_id' => $user->id,
                 ]);
 
                 if ($modelHasRolesTable->save($modelHasRole)) {
@@ -130,7 +131,7 @@ class SeedUsersCommand extends Command
         }
 
         $io->out('');
-        $io->success("✓ Proceso completado!");
+        $io->success('✓ Proceso completado!');
         $io->out("  - Usuarios creados: $createdCount");
         if ($errorCount > 0) {
             $io->out("  - Errores: $errorCount");

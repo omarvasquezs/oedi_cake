@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App\Controller;
@@ -47,8 +46,8 @@ class UsersController extends AppController
                 'OR' => [
                     'Users.name LIKE' => '%' . $search . '%',
                     'Users.username LIKE' => '%' . $search . '%',
-                    'Users.email LIKE' => '%' . $search . '%'
-                ]
+                    'Users.email LIKE' => '%' . $search . '%',
+                ],
             ]);
         }
 
@@ -81,7 +80,7 @@ class UsersController extends AppController
                 $userIdsWithRoles = $modelHasRolesTable->find()
                     ->where([
                         'role_id IN' => $roleIds,
-                        'model_type' => 'App\Model\Entity\User'
+                        'model_type' => 'App\Model\Entity\User',
                     ])
                     ->all()
                     ->extract('model_id')
@@ -99,7 +98,7 @@ class UsersController extends AppController
         // Configure pagination
         $this->paginate = [
             'limit' => $perPage,
-            'order' => ['Users.name' => 'asc']
+            'order' => ['Users.name' => 'asc'],
         ];
 
         $users = $this->paginate($query);
@@ -145,6 +144,7 @@ class UsersController extends AppController
             $sessionUser = $this->getRequest()->getSession()->read('Auth.User');
             if (!$sessionUser) {
                 $this->Flash->error('No hay sesión activa. Por favor inicia sesión.');
+
                 return $this->redirect(['action' => 'login']);
             }
             $userId = is_array($sessionUser) ? ($sessionUser['id'] ?? null) : ($sessionUser->id ?? null);
@@ -152,6 +152,7 @@ class UsersController extends AppController
 
         if (!$userId) {
             $this->Flash->error('No se pudo determinar el usuario autenticado.');
+
             return $this->redirect(['action' => 'login']);
         }
 
@@ -199,6 +200,7 @@ class UsersController extends AppController
         }
 
         $this->Flash->success('Has cerrado sesión.');
+
         return $this->redirect(['controller' => 'Users', 'action' => 'login']);
     }
 
@@ -213,6 +215,7 @@ class UsersController extends AppController
             if ($this->request->is('post')) {
                 if ($authResult->isValid()) {
                     $this->Flash->success('Has iniciado sesión correctamente.');
+
                     return $this->redirect(['controller' => 'Dashboard', 'action' => 'index']);
                 }
 
@@ -270,6 +273,7 @@ class UsersController extends AppController
                 if ($data['password'] !== $data['password_confirmation']) {
                     $this->Flash->error('Las contraseñas no coinciden.');
                     $this->set(compact('user'));
+
                     return;
                 }
             }
@@ -294,12 +298,13 @@ class UsersController extends AppController
                     $roleAssignment = $modelHasRolesTable->newEntity([
                         'role_id' => $usuarioRole->id,
                         'model_type' => 'App\Model\Entity\User',
-                        'model_id' => $user->id
+                        'model_id' => $user->id,
                     ]);
                     $modelHasRolesTable->save($roleAssignment);
                 }
 
                 $this->Flash->success('Usuario registrado correctamente. Ahora puedes iniciar sesión.');
+
                 return $this->redirect(['action' => 'login']);
             } else {
                 // Get validation errors
@@ -337,6 +342,7 @@ class UsersController extends AppController
 
             if (!$user) {
                 $this->Flash->error('No se pudo identificar al usuario.');
+
                 return $this->redirect(['action' => 'profile']);
             }
 
@@ -363,7 +369,7 @@ class UsersController extends AppController
                 // Delete existing role assignments
                 $modelHasRolesTable->deleteAll([
                     'model_id' => $userEntity->id,
-                    'model_type' => 'App\Model\Entity\User'
+                    'model_type' => 'App\Model\Entity\User',
                 ]);
 
                 // Insert new role assignments
@@ -371,7 +377,7 @@ class UsersController extends AppController
                     $roleAssignment = $modelHasRolesTable->newEntity([
                         'role_id' => $roleId,
                         'model_type' => 'App\Model\Entity\User',
-                        'model_id' => $userEntity->id
+                        'model_id' => $userEntity->id,
                     ]);
                     $modelHasRolesTable->save($roleAssignment);
                 }
@@ -408,6 +414,7 @@ class UsersController extends AppController
 
         if (!$user) {
             $this->Flash->error('No se pudo identificar al usuario.');
+
             return $this->redirect(['action' => 'profile']);
         }
 
@@ -425,18 +432,21 @@ class UsersController extends AppController
         // Verify current password
         if (!password_verify($currentPassword, $userEntity->password)) {
             $this->Flash->error('La contraseña actual es incorrecta.');
+
             return $this->redirect(['action' => 'profile']);
         }
 
         // Verify new passwords match
         if ($newPassword !== $confirmPassword) {
             $this->Flash->error('Las contraseñas nuevas no coinciden.');
+
             return $this->redirect(['action' => 'profile']);
         }
 
         // Verify new password is not empty
         if (empty($newPassword)) {
             $this->Flash->error('La nueva contraseña no puede estar vacía.');
+
             return $this->redirect(['action' => 'profile']);
         }
 
@@ -471,6 +481,7 @@ class UsersController extends AppController
         // Verify passwords match
         if ($data['password'] !== $data['password_confirmation']) {
             $this->Flash->error('Las contraseñas no coinciden.');
+
             return $this->redirect(['action' => 'index']);
         }
 
@@ -497,7 +508,7 @@ class UsersController extends AppController
                     $roleAssignment = $modelHasRolesTable->newEntity([
                         'role_id' => $roleId,
                         'model_type' => 'App\Model\Entity\User',
-                        'model_id' => $user->id
+                        'model_id' => $user->id,
                     ]);
                     $modelHasRolesTable->save($roleAssignment);
                 }
@@ -517,6 +528,7 @@ class UsersController extends AppController
 
         if (!$id) {
             $this->Flash->error('ID de usuario no válido.');
+
             return $this->redirect(['action' => 'index']);
         }
 
@@ -530,12 +542,14 @@ class UsersController extends AppController
         // Verify new passwords match
         if ($newPassword !== $confirmPassword) {
             $this->Flash->error('Las contraseñas nuevas no coinciden.');
+
             return $this->redirect(['action' => 'index']);
         }
 
         // Verify new password is not empty
         if (empty($newPassword)) {
             $this->Flash->error('La nueva contraseña no puede estar vacía.');
+
             return $this->redirect(['action' => 'index']);
         }
 
@@ -557,6 +571,7 @@ class UsersController extends AppController
 
         if (!$id) {
             $this->Flash->error('ID de usuario no válido.');
+
             return $this->redirect(['action' => 'index']);
         }
 
@@ -568,6 +583,7 @@ class UsersController extends AppController
 
         if ($currentUserId == $id) {
             $this->Flash->error('No puedes eliminar tu propia cuenta.');
+
             return $this->redirect(['action' => 'index']);
         }
 
@@ -578,7 +594,7 @@ class UsersController extends AppController
         $modelHasRolesTable = $this->getTableLocator()->get('ModelHasRoles');
         $modelHasRolesTable->deleteAll([
             'model_id' => $id,
-            'model_type' => 'App\Model\Entity\User'
+            'model_type' => 'App\Model\Entity\User',
         ]);
 
         // Delete the user

@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 /**
@@ -19,6 +18,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Cake\Controller\Controller;
+use Cake\Event\EventInterface;
 
 /**
  * Application Controller
@@ -57,7 +57,7 @@ class AppController extends Controller
      * If the request is Users::login, use the dedicated 'login' layout.
      */
     public function beforeFilter(
-        \Cake\Event\EventInterface $event
+        EventInterface $event,
     ) {
         parent::beforeFilter($event);
 
@@ -67,6 +67,7 @@ class AppController extends Controller
         // If the request is Users::login or Users::register, use the clean login layout and allow access
         if ($controller === 'Users' && ($action === 'login' || $action === 'register')) {
             $this->viewBuilder()->setLayout('login');
+
             return;
         }
 

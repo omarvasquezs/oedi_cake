@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 
@@ -39,13 +40,13 @@ class UsersTable extends Table
             ->add('username', 'unique', [
                 'rule' => 'validateUnique',
                 'provider' => 'table',
-                'message' => 'Este nombre de usuario ya está en uso.'
+                'message' => 'Este nombre de usuario ya está en uso.',
             ])
             ->add('username', 'noSpaces', [
                 'rule' => function ($value, $context) {
                     return !preg_match('/\s/', $value);
                 },
-                'message' => 'El nombre de usuario no puede contener espacios.'
+                'message' => 'El nombre de usuario no puede contener espacios.',
             ]);
 
         $validator
@@ -55,7 +56,7 @@ class UsersTable extends Table
             ->add('email', 'unique', [
                 'rule' => 'validateUnique',
                 'provider' => 'table',
-                'message' => 'Este correo electrónico ya está registrado.'
+                'message' => 'Este correo electrónico ya está registrado.',
             ]);
 
         $validator
@@ -68,11 +69,11 @@ class UsersTable extends Table
         return $validator;
     }
 
-    public function buildRules(\Cake\ORM\RulesChecker $rules): \Cake\ORM\RulesChecker
+    public function buildRules(RulesChecker $rules): RulesChecker
     {
         $rules->add($rules->isUnique(['username'], 'Este nombre de usuario ya está en uso.'));
         $rules->add($rules->isUnique(['email'], 'Este correo electrónico ya está registrado.'));
-        
+
         return $rules;
     }
 }
