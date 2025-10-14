@@ -1,11 +1,15 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App\Controller;
 
 class TiposReunionController extends AppController
 {
+    /**
+     * List meeting types with search, filter and pagination.
+     *
+     * @return void
+     */
     public function index()
     {
         $this->set('title', 'Tipos de Reunión');
@@ -29,7 +33,8 @@ class TiposReunionController extends AppController
         // Column filter: descripcion
         $filterDescripcion = trim((string)($params['filter_descripcion'] ?? ''));
         if ($filterDescripcion !== '') {
-            $query->where(['TiposReunion.descripcion LIKE' => '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterDescripcion) . '%']);
+            $likeFilter = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterDescripcion) . '%';
+            $query->where(['TiposReunion.descripcion LIKE' => $likeFilter]);
         }
 
         $query->order(['TiposReunion.descripcion' => 'ASC']);
@@ -42,6 +47,11 @@ class TiposReunionController extends AppController
         $this->set(compact('tipos', 'search', 'filterDescripcion', 'perPage'));
     }
 
+    /**
+     * Create a new meeting type.
+     *
+     * @return \Cake\Http\Response|null|void
+     */
     public function add()
     {
         $tipo = $this->TiposReunion->newEmptyEntity();
@@ -54,10 +64,17 @@ class TiposReunionController extends AppController
                 $this->set('openAddModal', true);
             }
         }
+
         return $this->redirect(['action' => 'index']);
     }
 
-    public function edit($id = null)
+    /**
+     * Edit a meeting type.
+     *
+     * @param int $id TipoReunion ID
+     * @return \Cake\Http\Response|null|void
+     */
+    public function edit(?int $id = null)
     {
         $tipo = $this->TiposReunion->get($id);
         if ($this->request->is(['patch', 'post', 'put'])) {
@@ -69,10 +86,17 @@ class TiposReunionController extends AppController
                 $this->set('openEditModal', true);
             }
         }
+
         return $this->redirect(['action' => 'index']);
     }
 
-    public function delete($id = null)
+    /**
+     * Delete a meeting type.
+     *
+     * @param int $id TipoReunion ID
+     * @return \Cake\Http\Response|null|void
+     */
+    public function delete(?int $id = null)
     {
         $this->request->allowMethod(['post', 'delete']);
         $tipo = $this->TiposReunion->get($id);
@@ -81,6 +105,7 @@ class TiposReunionController extends AppController
         } else {
             $this->Flash->error(__('El tipo de reunión no pudo ser eliminado. Por favor, intente de nuevo.'));
         }
+
         return $this->redirect(['action' => 'index']);
     }
 }

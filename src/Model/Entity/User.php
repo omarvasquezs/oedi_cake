@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App\Model\Entity;
@@ -19,6 +18,12 @@ class User extends Entity
 
     // Automatically hash passwords when they are changed
     // Using PASSWORD_BCRYPT to match the seeder configuration
+    /**
+     * Password setter that hashes the plain password using bcrypt.
+     *
+     * @param string $password Plain password
+     * @return string|null Hashed password or null when empty
+     */
     protected function _setPassword(string $password): ?string
     {
         if (strlen($password) > 0) {

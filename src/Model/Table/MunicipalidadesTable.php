@@ -1,15 +1,20 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
-use Cake\ORM\RulesChecker;
 
 class MunicipalidadesTable extends Table
 {
+    /**
+     * Initialize table configuration and behaviors.
+     *
+     * @param array<string,mixed> $config Configuration options passed to the table
+     * @return void
+     */
     public function initialize(array $config): void
     {
         parent::initialize($config);
@@ -25,6 +30,12 @@ class MunicipalidadesTable extends Table
         ]);
     }
 
+    /**
+     * Default validation rules for municipalidades.
+     *
+     * @param \Cake\Validation\Validator $validator Validator instance
+     * @return \Cake\Validation\Validator
+     */
     public function validationDefault(Validator $validator): Validator
     {
         $validator
@@ -34,7 +45,7 @@ class MunicipalidadesTable extends Table
             ->notEmptyString('ubigeo', 'El ubigeo es requerido')
             ->add('ubigeo', 'numericOnly', [
                 'rule' => ['custom', '/^\d+$/'],
-                'message' => 'El ubigeo debe contener solo números'
+                'message' => 'El ubigeo debe contener solo números',
             ]);
 
         $validator
@@ -80,15 +91,22 @@ class MunicipalidadesTable extends Table
             ->allowEmptyString('RUC')
             ->add('RUC', 'numericOnly', [
                 'rule' => ['custom', '/^\d+$/'],
-                'message' => 'El RUC debe contener solo números'
+                'message' => 'El RUC debe contener solo números',
             ]);
 
         return $validator;
     }
 
+    /**
+     * Build application integrity rules.
+     *
+     * @param \Cake\ORM\RulesChecker $rules Rules checker instance
+     * @return \Cake\ORM\RulesChecker
+     */
     public function buildRules(RulesChecker $rules): RulesChecker
     {
         $rules->add($rules->isUnique(['ubigeo'], 'El ubigeo ya existe'));
+
         return $rules;
     }
 }

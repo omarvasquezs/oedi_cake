@@ -1,11 +1,15 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App\Controller;
 
 class EntidadesController extends AppController
 {
+    /**
+     * List municipalidades with search, column filters and pagination.
+     *
+     * @return void
+     */
     public function index()
     {
         $this->set('title', 'Entidades');
@@ -24,7 +28,7 @@ class EntidadesController extends AppController
                     'provincia LIKE' => '%' . $search . '%',
                     'distrito LIKE' => '%' . $search . '%',
                     'ubigeo LIKE' => '%' . $search . '%',
-                ]
+                ],
             ]);
         }
 
@@ -58,7 +62,7 @@ class EntidadesController extends AppController
         $perPage = in_array($perPage, [10, 20, 40, 50, 100]) ? $perPage : 10;
 
         $this->paginate = [
-            'limit' => $perPage
+            'limit' => $perPage,
         ];
 
         $municipalidades = $this->paginate($query);
@@ -71,10 +75,17 @@ class EntidadesController extends AppController
             'filterDepartamento',
             'filterProvincia',
             'filterDistrito',
-            'filterNivel'
+            'filterNivel',
         ));
     }
 
+    /**
+     * Create a new municipalidad from POSTed form data.
+     *
+     * Re-renders index and reopens the modal on validation errors.
+     *
+     * @return \Cake\Http\Response|null|void
+     */
     public function addMunicipalidad()
     {
         $this->request->allowMethod(['post']);
@@ -100,6 +111,7 @@ class EntidadesController extends AppController
 
         if ($municipalidadesTable->save($entity)) {
             $this->Flash->success('Municipalidad creada correctamente.');
+
             return $this->redirect(['action' => 'index']);
         } else {
             // On failure, re-render index with the entity to show validation errors inside the modal
@@ -119,10 +131,18 @@ class EntidadesController extends AppController
             // inform the view to reopen the modal
             $this->set('openNuevaEntidadModal', true);
             $this->render('index');
+
             return null;
         }
     }
 
+    /**
+     * Edit an existing municipalidad from POSTed form data.
+     *
+     * Re-renders index and reopens the edit modal on validation errors.
+     *
+     * @return \Cake\Http\Response|null|void
+     */
     public function editMunicipalidad()
     {
         $this->request->allowMethod(['post']);
@@ -133,6 +153,7 @@ class EntidadesController extends AppController
 
         if (!$id) {
             $this->Flash->error('ID de municipalidad no especificado.');
+
             return $this->redirect(['action' => 'index']);
         }
 
@@ -153,6 +174,7 @@ class EntidadesController extends AppController
 
         if ($municipalidadesTable->save($entity)) {
             $this->Flash->success('Municipalidad actualizada correctamente.');
+
             return $this->redirect(['action' => 'index']);
         }
 
@@ -169,14 +191,22 @@ class EntidadesController extends AppController
 
         $this->set('openEditarEntidadModal', true);
         $this->render('index');
+
         return null;
     }
 
-    public function deleteMunicipalidad($id = null)
+    /**
+     * Delete a municipalidad.
+     *
+     * @param int|null $id Municipalidad ID
+     * @return \Cake\Http\Response|null
+     */
+    public function deleteMunicipalidad(?int $id = null)
     {
         $this->request->allowMethod(['post', 'delete']);
         if (!$id) {
             $this->Flash->error('ID no especificado.');
+
             return $this->redirect(['action' => 'index']);
         }
 

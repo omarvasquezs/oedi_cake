@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App\Model\Table;
@@ -9,6 +8,12 @@ use Cake\Validation\Validator;
 
 class EstadosTable extends Table
 {
+    /**
+     * Initialize table configuration and behaviors.
+     *
+     * @param array<string,mixed> $config Configuration options passed to the table
+     * @return void
+     */
     public function initialize(array $config): void
     {
         parent::initialize($config);
@@ -27,6 +32,12 @@ class EstadosTable extends Table
         ]);
     }
 
+    /**
+     * Default validation rules.
+     *
+     * @param \Cake\Validation\Validator $validator Validator instance
+     * @return \Cake\Validation\Validator
+     */
     public function validationDefault(Validator $validator): Validator
     {
         $validator

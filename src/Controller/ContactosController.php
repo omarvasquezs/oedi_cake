@@ -1,11 +1,15 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App\Controller;
 
 class ContactosController extends AppController
 {
+    /**
+     * List contacts with search, filters and pagination.
+     *
+     * @return void
+     */
     public function index()
     {
         $this->set('title', 'Contactos');
@@ -41,27 +45,32 @@ class ContactosController extends AppController
         // Column filters
         $filterNombre = trim((string)($queryParams['filter_nombre'] ?? ''));
         if ($filterNombre !== '') {
-            $query->where(['Contactos.nombre_completo LIKE' => '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterNombre) . '%']);
+            $likeNombre = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterNombre) . '%';
+            $query->where(['Contactos.nombre_completo LIKE' => $likeNombre]);
         }
 
         $filterCargo = trim((string)($queryParams['filter_cargo'] ?? ''));
         if ($filterCargo !== '') {
-            $query->where(['Contactos.cargo LIKE' => '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterCargo) . '%']);
+            $likeCargo = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterCargo) . '%';
+            $query->where(['Contactos.cargo LIKE' => $likeCargo]);
         }
 
         $filterTelefono = trim((string)($queryParams['filter_telefono'] ?? ''));
         if ($filterTelefono !== '') {
-            $query->where(['Contactos.telefono LIKE' => '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterTelefono) . '%']);
+            $likeTelefono = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterTelefono) . '%';
+            $query->where(['Contactos.telefono LIKE' => $likeTelefono]);
         }
 
         $filterEmail = trim((string)($queryParams['filter_email'] ?? ''));
         if ($filterEmail !== '') {
-            $query->where(['Contactos.email LIKE' => '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterEmail) . '%']);
+            $likeEmail = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterEmail) . '%';
+            $query->where(['Contactos.email LIKE' => $likeEmail]);
         }
 
         $filterMunicipalidad = trim((string)($queryParams['filter_municipalidad'] ?? ''));
         if ($filterMunicipalidad !== '') {
-            $query->where(['Municipalidades.nombre LIKE' => '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterMunicipalidad) . '%']);
+            $likeMunicipalidad = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterMunicipalidad) . '%';
+            $query->where(['Municipalidades.nombre LIKE' => $likeMunicipalidad]);
         }
 
         // Default ordering
@@ -85,10 +94,15 @@ class ContactosController extends AppController
             'filterTelefono',
             'filterEmail',
             'filterMunicipalidad',
-            'perPage'
+            'perPage',
         ));
     }
 
+    /**
+     * Create a new contacto.
+     *
+     * @return \Cake\Http\Response|null|void
+     */
     public function add()
     {
         $contacto = $this->Contactos->newEmptyEntity();
@@ -100,10 +114,17 @@ class ContactosController extends AppController
                 $this->Flash->error(__('El contacto no pudo ser guardado. Por favor, intente de nuevo.'));
             }
         }
+
         return $this->redirect(['action' => 'index']);
     }
 
-    public function edit($id = null)
+    /**
+     * Edit an existing contacto.
+     *
+     * @param int $id Contacto ID
+     * @return \Cake\Http\Response|null|void
+     */
+    public function edit(?int $id = null)
     {
         $contacto = $this->Contactos->get($id);
         if ($this->request->is(['patch', 'post', 'put'])) {
@@ -114,10 +135,17 @@ class ContactosController extends AppController
                 $this->Flash->error(__('El contacto no pudo ser guardado. Por favor, intente de nuevo.'));
             }
         }
+
         return $this->redirect(['action' => 'index']);
     }
 
-    public function delete($id = null)
+    /**
+     * Delete a contacto.
+     *
+     * @param int $id Contacto ID
+     * @return \Cake\Http\Response|null|void
+     */
+    public function delete(?int $id = null)
     {
         $this->request->allowMethod(['post', 'delete']);
         $contacto = $this->Contactos->get($id);

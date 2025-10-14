@@ -1,11 +1,15 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App\Controller;
 
 class EstadosController extends AppController
 {
+    /**
+     * List states with search, filter and pagination.
+     *
+     * @return void
+     */
     public function index()
     {
         $this->set('title', 'Estados');
@@ -29,7 +33,8 @@ class EstadosController extends AppController
         // Column filter
         $filterDescripcion = trim((string)($params['filter_descripcion'] ?? ''));
         if ($filterDescripcion !== '') {
-            $query->where(['Estados.descripcion LIKE' => '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterDescripcion) . '%']);
+            $likeFilter = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterDescripcion) . '%';
+            $query->where(['Estados.descripcion LIKE' => $likeFilter]);
         }
 
         $query->order(['Estados.descripcion' => 'ASC']);
@@ -42,6 +47,11 @@ class EstadosController extends AppController
         $this->set(compact('estados', 'search', 'filterDescripcion', 'perPage'));
     }
 
+    /**
+     * Create a new state.
+     *
+     * @return \Cake\Http\Response|null|void
+     */
     public function add()
     {
         $estado = $this->Estados->newEmptyEntity();
@@ -54,10 +64,17 @@ class EstadosController extends AppController
                 $this->set('openAddModal', true);
             }
         }
+
         return $this->redirect(['action' => 'index']);
     }
 
-    public function edit($id = null)
+    /**
+     * Edit a state.
+     *
+     * @param int $id Estado ID
+     * @return \Cake\Http\Response|null|void
+     */
+    public function edit(?int $id = null)
     {
         $estado = $this->Estados->get($id);
         if ($this->request->is(['patch', 'post', 'put'])) {
@@ -69,10 +86,17 @@ class EstadosController extends AppController
                 $this->set('openEditModal', true);
             }
         }
+
         return $this->redirect(['action' => 'index']);
     }
 
-    public function delete($id = null)
+    /**
+     * Delete a state.
+     *
+     * @param int $id Estado ID
+     * @return \Cake\Http\Response|null|void
+     */
+    public function delete(?int $id = null)
     {
         $this->request->allowMethod(['post', 'delete']);
         $estado = $this->Estados->get($id);
@@ -81,6 +105,7 @@ class EstadosController extends AppController
         } else {
             $this->Flash->error(__('El estado no pudo ser eliminado. Por favor, intente de nuevo.'));
         }
+
         return $this->redirect(['action' => 'index']);
     }
 }

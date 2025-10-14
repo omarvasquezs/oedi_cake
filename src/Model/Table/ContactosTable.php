@@ -1,16 +1,20 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App\Model\Table;
 
-use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 
 class ContactosTable extends Table
 {
+    /**
+     * Initialize table configuration, behaviors and associations.
+     *
+     * @param array<string,mixed> $config Configuration options passed to the table
+     * @return void
+     */
     public function initialize(array $config): void
     {
         parent::initialize($config);
@@ -27,6 +31,12 @@ class ContactosTable extends Table
         ]);
     }
 
+    /**
+     * Default validation rules.
+     *
+     * @param \Cake\Validation\Validator $validator Validator instance
+     * @return \Cake\Validation\Validator
+     */
     public function validationDefault(Validator $validator): Validator
     {
         $validator
@@ -55,6 +65,12 @@ class ContactosTable extends Table
         return $validator;
     }
 
+    /**
+     * Build application integrity rules.
+     *
+     * @param \Cake\ORM\RulesChecker $rules Rules checker instance
+     * @return \Cake\ORM\RulesChecker
+     */
     public function buildRules(RulesChecker $rules): RulesChecker
     {
         $rules->add($rules->existsIn('id_municipalidad', 'Municipalidades'), ['errorField' => 'id_municipalidad']);
