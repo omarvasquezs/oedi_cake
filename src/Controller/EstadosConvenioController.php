@@ -4,8 +4,26 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Model\Table\EstadosConveniosTable;
+
 class EstadosConvenioController extends AppController
 {
+    /**
+     * @var \App\Model\Table\EstadosConveniosTable
+     */
+    protected EstadosConveniosTable $EstadosConvenios;
+
+    /**
+     * Initialize controller.
+     *
+     * @return void
+     */
+    public function initialize(): void
+    {
+        parent::initialize();
+        $this->EstadosConvenios = $this->fetchTable('EstadosConvenios');
+    }
+
     /**
      * List Estados de Convenio with search, filter and pagination.
      *
