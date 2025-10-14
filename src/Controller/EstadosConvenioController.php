@@ -56,7 +56,7 @@ class EstadosConvenioController extends AppController
             $query->where(['EstadosConvenios.descripcion LIKE' => $likeFilter]);
         }
 
-        $query->order(['EstadosConvenios.descripcion' => 'ASC']);
+        $query->orderBy(['EstadosConvenios.descripcion' => 'ASC']);
 
         $this->paginate = [
             'limit' => $perPage,
