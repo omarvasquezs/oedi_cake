@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Controller;
@@ -8,5 +9,124 @@ class ContactosController extends AppController
     public function index()
     {
         $this->set('title', 'Contactos');
+
+        $queryParams = $this->request->getQueryParams();
+
+        // Items per page handling (allowed values)
+        $allowedPerPage = [10, 20, 40, 50, 100];
+        $perPage = (int)($queryParams['per_page'] ?? 20);
+        if (!in_array($perPage, $allowedPerPage, true)) {
+            $perPage = 20;
+        }
+
+        // Base query with association
+        $query = $this->Contactos->find()
+            ->contain(['Municipalidades']);
+
+        // Global search across key columns (and associated municipalidad nombre)
+        $search = trim((string)($queryParams['search'] ?? ''));
+        if ($search !== '') {
+            $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $search) . '%';
+            $query->where([
+                'OR' => [
+                    'Contactos.nombre_completo LIKE' => $like,
+                    'Contactos.cargo LIKE' => $like,
+                    'Contactos.telefono LIKE' => $like,
+                    'Contactos.email LIKE' => $like,
+                    'Municipalidades.nombre LIKE' => $like,
+                ],
+            ]);
+        }
+
+        // Column filters
+        $filterNombre = trim((string)($queryParams['filter_nombre'] ?? ''));
+        if ($filterNombre !== '') {
+            $query->where(['Contactos.nombre_completo LIKE' => '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterNombre) . '%']);
+        }
+
+        $filterCargo = trim((string)($queryParams['filter_cargo'] ?? ''));
+        if ($filterCargo !== '') {
+            $query->where(['Contactos.cargo LIKE' => '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterCargo) . '%']);
+        }
+
+        $filterTelefono = trim((string)($queryParams['filter_telefono'] ?? ''));
+        if ($filterTelefono !== '') {
+            $query->where(['Contactos.telefono LIKE' => '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterTelefono) . '%']);
+        }
+
+        $filterEmail = trim((string)($queryParams['filter_email'] ?? ''));
+        if ($filterEmail !== '') {
+            $query->where(['Contactos.email LIKE' => '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterEmail) . '%']);
+        }
+
+        $filterMunicipalidad = trim((string)($queryParams['filter_municipalidad'] ?? ''));
+        if ($filterMunicipalidad !== '') {
+            $query->where(['Municipalidades.nombre LIKE' => '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterMunicipalidad) . '%']);
+        }
+
+        // Default ordering
+        $query->order(['Contactos.nombre_completo' => 'ASC']);
+
+        // Pagination settings (do not pass 'contain' here; it's already on the SelectQuery)
+        $this->paginate = [
+            'limit' => $perPage,
+        ];
+        $contactos = $this->paginate($query);
+
+        // Lists for forms
+        $municipalidades = $this->Contactos->Municipalidades->find('list')->all();
+
+        $this->set(compact(
+            'contactos',
+            'municipalidades',
+            'search',
+            'filterNombre',
+            'filterCargo',
+            'filterTelefono',
+            'filterEmail',
+            'filterMunicipalidad',
+            'perPage'
+        ));
+    }
+
+    public function add()
+    {
+        $contacto = $this->Contactos->newEmptyEntity();
+        if ($this->request->is('post')) {
+            $contacto = $this->Contactos->patchEntity($contacto, $this->request->getData());
+            if ($this->Contactos->save($contacto)) {
+                $this->Flash->success(__('El contacto ha sido guardado.'));
+            } else {
+                $this->Flash->error(__('El contacto no pudo ser guardado. Por favor, intente de nuevo.'));
+            }
+        }
+        return $this->redirect(['action' => 'index']);
+    }
+
+    public function edit($id = null)
+    {
+        $contacto = $this->Contactos->get($id);
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $contacto = $this->Contactos->patchEntity($contacto, $this->request->getData());
+            if ($this->Contactos->save($contacto)) {
+                $this->Flash->success(__('El contacto ha sido guardado.'));
+            } else {
+                $this->Flash->error(__('El contacto no pudo ser guardado. Por favor, intente de nuevo.'));
+            }
+        }
+        return $this->redirect(['action' => 'index']);
+    }
+
+    public function delete($id = null)
+    {
+        $this->request->allowMethod(['post', 'delete']);
+        $contacto = $this->Contactos->get($id);
+        if ($this->Contactos->delete($contacto)) {
+            $this->Flash->success(__('El contacto ha sido eliminado.'));
+        } else {
+            $this->Flash->error(__('El contacto no pudo ser eliminado. Por favor, intente de nuevo.'));
+        }
+
+        return $this->redirect(['action' => 'index']);
     }
 }
