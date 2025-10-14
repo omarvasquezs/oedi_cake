@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @var \App\View\AppView $this
  * @var \Cake\Collection\CollectionInterface $estados
@@ -7,20 +8,109 @@ $this->assign('title', $title ?? 'Estados');
 ?>
 
 <style>
-    .estados-index { display:flex; flex-direction:column; height: calc(100vh - var(--topbar-height) - 4rem); }
-    .estados-index .table-wrapper { flex:1 1 auto; overflow-y:auto; min-height:0; }
-    .pagination-section { flex-shrink:0; }
-    .input-with-icon { position:relative; }
-    .input-with-icon .input-icon { position:absolute; left:0.75rem; top:50%; transform:translateY(-50%); color:#666; font-size:14px; pointer-events:none; display:inline-flex; align-items:center; justify-content:center; }
-    .input-with-icon .search-input { padding-left:2.75rem; margin-bottom:0; }
-    .input-with-icon .input-clear { position:absolute; right:0.5rem; top:50%; transform:translateY(-50%); width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; color:#999 !important; text-decoration:none !important; border-radius:50% !important; transition: background-color .15s, color .15s; background:transparent !important; border:none !important; padding:0 !important; line-height:1 !important; box-shadow:none !important; z-index:3; }
-    .input-with-icon .input-clear:hover { background-color:#f3f4f6; color:#666; }
-    .action-icon { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border:1px solid #dadce0; border-radius:50%; background:#fff; text-decoration:none !important; transition:background-color .2s ease; padding:0; margin:0; }
-    .action-icon:hover { background:#f8f9fa; }
-    .icon-edit { color:#4285F4; }
-    .icon-delete { color:#DB4437; }
-    #addEstadoModal .modal-content .form-control, #addEstadoModal .modal-content .btn, #editEstadoModal .modal-content .form-control, #editEstadoModal .modal-content .btn { font-size:16px; }
-    #addEstadoModal textarea, #editEstadoModal textarea { min-height: 120px; }
+    .estados-index {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - var(--topbar-height) - 4rem);
+    }
+
+    .estados-index .table-wrapper {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        min-height: 0;
+    }
+
+    .pagination-section {
+        flex-shrink: 0;
+    }
+
+    .input-with-icon {
+        position: relative;
+    }
+
+    .input-with-icon .input-icon {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #666;
+        font-size: 14px;
+        pointer-events: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .input-with-icon .search-input {
+        padding-left: 2.75rem;
+        margin-bottom: 0;
+    }
+
+    .input-with-icon .input-clear {
+        position: absolute;
+        right: 0.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 28px;
+        height: 28px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #999 !important;
+        text-decoration: none !important;
+        border-radius: 50% !important;
+        transition: background-color .15s, color .15s;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        line-height: 1 !important;
+        box-shadow: none !important;
+        z-index: 3;
+    }
+
+    .input-with-icon .input-clear:hover {
+        background-color: #f3f4f6;
+        color: #666;
+    }
+
+    .action-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border: 1px solid #dadce0;
+        border-radius: 50%;
+        background: #fff;
+        text-decoration: none !important;
+        transition: background-color .2s ease;
+        padding: 0;
+        margin: 0;
+    }
+
+    .action-icon:hover {
+        background: #f8f9fa;
+    }
+
+    .icon-edit {
+        color: #4285F4;
+    }
+
+    .icon-delete {
+        color: #DB4437;
+    }
+
+    #addEstadoModal .modal-content .form-control,
+    #addEstadoModal .modal-content .btn,
+    #editEstadoModal .modal-content .form-control,
+    #editEstadoModal .modal-content .btn {
+        font-size: 16px;
+    }
+
+    #addEstadoModal textarea,
+    #editEstadoModal textarea {
+        min-height: 120px;
+    }
 </style>
 
 <div class="estados-index">
@@ -82,7 +172,9 @@ $this->assign('title', $title ?? 'Estados');
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <tr><td colspan="2" style="padding:3rem;text-align:center;color:#95a5a6;font-size:14px;">No hay estados disponibles</td></tr>
+                    <tr>
+                        <td colspan="2" style="padding:3rem;text-align:center;color:#95a5a6;font-size:14px;">No hay estados disponibles</td>
+                    </tr>
                 <?php endif; ?>
             </tbody>
         </table>
@@ -106,7 +198,12 @@ $this->assign('title', $title ?? 'Estados');
                 <a href="<?= $this->Paginator->generateUrl(['page' => 1, 'per_page' => $perPage]) ?>" style="padding:0.5rem 0.75rem;border:1px solid #ddd;background:white;color:#666;text-decoration:none;border-radius:4px;font-size:14px;display:inline-flex;align-items:center;justify-content:center;min-width:36px;transition:all 0.2s;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='white'"><i class="fa-solid fa-angles-left"></i></a>
                 <a href="<?= $this->Paginator->generateUrl(['page' => $this->Paginator->counter('{{page}}') - 1, 'per_page' => $perPage]) ?>" style="padding:0.5rem 0.75rem;border:1px solid #ddd;background:white;color:#666;text-decoration:none;border-radius:4px;font-size:14px;display:inline-flex;align-items:center;justify-content:center;min-width:36px;transition:all 0.2s;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='white'"><i class="fa-solid fa-angle-left"></i></a>
             <?php endif; ?>
-            <?php $currentPage = $this->Paginator->counter('{{page}}'); $pageCount = $this->Paginator->counter('{{pages}}'); $start = max(1, $currentPage - 2); $end = min($pageCount, $start + 4); $start = max(1, $end - 4); for ($i = $start; $i <= $end; $i++): $isActive = $i == $currentPage; ?>
+            <?php $currentPage = $this->Paginator->counter('{{page}}');
+            $pageCount = $this->Paginator->counter('{{pages}}');
+            $start = max(1, $currentPage - 2);
+            $end = min($pageCount, $start + 4);
+            $start = max(1, $end - 4);
+            for ($i = $start; $i <= $end; $i++): $isActive = $i == $currentPage; ?>
                 <a href="<?= $this->Paginator->generateUrl(['page' => $i, 'per_page' => $perPage]) ?>" style="padding:0.5rem 0.75rem;border:1px solid <?= $isActive ? '#3498db' : '#ddd' ?>;background:<?= $isActive ? '#3498db' : 'white' ?>;color:<?= $isActive ? 'white' : '#666' ?>;text-decoration:none;border-radius:4px;font-size:14px;display:inline-flex;align-items:center;justify-content:center;min-width:36px;font-weight:<?= $isActive ? '600' : 'normal' ?>;transition:all 0.2s;" <?= !$isActive ? "onmouseover=\"this.style.background='#f5f5f5'\" onmouseout=\"this.style.background='white'\"" : '' ?>><?= $i ?></a>
             <?php endfor; ?>
             <?php if ($this->Paginator->hasNext()): ?>
@@ -114,7 +211,9 @@ $this->assign('title', $title ?? 'Estados');
                 <a href="<?= $this->Paginator->generateUrl(['page' => $pageCount, 'per_page' => $perPage]) ?>" style="padding:0.5rem 0.75rem;border:1px solid #ddd;background:white;color:#666;text-decoration:none;border-radius:4px;font-size:14px;display:inline-flex;align-items:center;justify-content:center;min-width:36px;transition:all 0.2s;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='white'"><i class="fa-solid fa-angles-right"></i></a>
             <?php endif; ?>
         </nav>
-        <div style="color:#666;font-size:14px;text-align:right;"><?php $start = (($this->Paginator->counter('{{page}}') - 1) * $perPage) + 1; $end = min($this->Paginator->counter('{{page}}') * $perPage, $this->Paginator->counter('{{count}}')); $total = $this->Paginator->counter('{{count}}'); ?>Mostrando <?= $start ?> a <?= $end ?> de <?= $total ?> registros</div>
+        <div style="color:#666;font-size:14px;text-align:right;"><?php $start = (($this->Paginator->counter('{{page}}') - 1) * $perPage) + 1;
+                                                                    $end = min($this->Paginator->counter('{{page}}') * $perPage, $this->Paginator->counter('{{count}}'));
+                                                                    $total = $this->Paginator->counter('{{count}}'); ?>Mostrando <?= $start ?> a <?= $end ?> de <?= $total ?> registros</div>
     </div>
 </div>
 
@@ -171,9 +270,17 @@ $this->assign('title', $title ?? 'Estados');
         if (searchInput) {
             searchInput.addEventListener('input', function() {
                 clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(function() { searchForm.submit(); }, 500);
+                searchTimeout = setTimeout(function() {
+                    searchForm.submit();
+                }, 500);
             });
-            searchInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); clearTimeout(searchTimeout); searchForm.submit(); } });
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    clearTimeout(searchTimeout);
+                    searchForm.submit();
+                }
+            });
         }
     });
 
@@ -195,15 +302,30 @@ $this->assign('title', $title ?? 'Estados');
                 if (filterDescripcion) filterDescripcion.focus();
             }
         });
+
         function applyFilters() {
             const url = new URL(window.location.href);
             url.searchParams.delete('search');
-            if (filterDescripcion.value) url.searchParams.set('filter_descripcion', filterDescripcion.value); else url.searchParams.delete('filter_descripcion');
+            if (filterDescripcion.value) url.searchParams.set('filter_descripcion', filterDescripcion.value);
+            else url.searchParams.delete('filter_descripcion');
             url.searchParams.set('page', 1);
             window.location.href = url.toString();
         }
-        window.clearFilter = function(inputId) { const input = document.getElementById(inputId); input.value=''; applyFilters(); };
-        [filterDescripcion].forEach(input => { if (input) { input.addEventListener('input', function(){ clearTimeout(filterTimeout); filterTimeout = setTimeout(function(){ applyFilters(); }, 500); }); } });
+        window.clearFilter = function(inputId) {
+            const input = document.getElementById(inputId);
+            input.value = '';
+            applyFilters();
+        };
+        [filterDescripcion].forEach(input => {
+            if (input) {
+                input.addEventListener('input', function() {
+                    clearTimeout(filterTimeout);
+                    filterTimeout = setTimeout(function() {
+                        applyFilters();
+                    }, 500);
+                });
+            }
+        });
     });
 
     // Edit modal opener
@@ -212,7 +334,11 @@ $this->assign('title', $title ?? 'Estados');
         form.setAttribute('action', "<?= $this->Url->build(['controller' => 'Estados', 'action' => 'edit']) ?>/" + estado.id_estado);
         document.getElementById('edit-id').value = estado.id_estado;
         document.getElementById('edit-descripcion').value = estado.descripcion || '';
-        try { new bootstrap.Modal(document.getElementById('editEstadoModal')).show(); } catch(e) { console.error(e); }
+        try {
+            new bootstrap.Modal(document.getElementById('editEstadoModal')).show();
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     // Change per page
