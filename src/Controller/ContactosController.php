@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Controller;
@@ -109,8 +110,34 @@ class ContactosController extends AppController
         if ($this->request->is('post')) {
             $contacto = $this->Contactos->patchEntity($contacto, $this->request->getData());
             if ($this->Contactos->save($contacto)) {
+                // AJAX request: return JSON with the new contact info
+                if ($this->request->is('ajax')) {
+                    $payload = [
+                        'success' => true,
+                        'contacto' => [
+                            'id' => $contacto->id_contacto,
+                            'label' => (string)$contacto->nombre_completo,
+                        ],
+                    ];
+
+                    return $this->response
+                        ->withType('application/json')
+                        ->withStringBody(json_encode($payload));
+                }
+
                 $this->Flash->success(__('El contacto ha sido guardado.'));
             } else {
+                if ($this->request->is('ajax')) {
+                    $payload = [
+                        'success' => false,
+                        'errors' => $contacto->getErrors(),
+                    ];
+
+                    return $this->response
+                        ->withType('application/json')
+                        ->withStringBody(json_encode($payload));
+                }
+
                 $this->Flash->error(__('El contacto no pudo ser guardado. Por favor, intente de nuevo.'));
             }
         }
@@ -156,5 +183,35 @@ class ContactosController extends AppController
         }
 
         return $this->redirect(['action' => 'index']);
+    }
+
+    /**
+     * Return contactos for a given municipalidad as JSON for async selects.
+     *
+     * @param int|null $idMunicipalidad Municipalidad ID
+     * @return \Cake\Http\Response|null
+     */
+    public function listByMunicipalidad(?int $idMunicipalidad = null)
+    {
+        $this->request->allowMethod(['get']);
+        if ($idMunicipalidad === null) {
+            return $this->response->withType('application/json')
+                ->withStringBody(json_encode(['success' => false, 'contactos' => []]));
+        }
+
+        $items = $this->Contactos->find()
+            ->where(['id_municipalidad' => $idMunicipalidad])
+            ->order(['nombre_completo' => 'ASC'])
+            ->all()
+            ->map(function ($c) {
+                return [
+                    'id' => $c->id_contacto,
+                    'label' => (string)$c->nombre_completo,
+                ];
+            })
+            ->toList();
+
+        return $this->response->withType('application/json')
+            ->withStringBody(json_encode(['success' => true, 'contactos' => $items]));
     }
 }
