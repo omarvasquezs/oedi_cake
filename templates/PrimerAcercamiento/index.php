@@ -505,7 +505,7 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
             <div class="modal-body p-5">
                 <?= $this->Form->control('nombre_completo', ['type' => 'text', 'class' => 'form-control', 'label' => 'Nombre Completo', 'required' => true]) ?>
                 <?= $this->Form->control('cargo', ['type' => 'text', 'class' => 'form-control', 'label' => 'Cargo', 'required' => true]) ?>
-                <?= $this->Form->control('telefono', ['type' => 'text', 'class' => 'form-control', 'label' => 'Teléfono']) ?>
+                <?= $this->Form->control('telefono', ['type' => 'number', 'class' => 'form-control', 'label' => 'Teléfono']) ?>
                 <?= $this->Form->control('email', ['type' => 'email', 'class' => 'form-control', 'label' => 'Email']) ?>
             </div>
             <div class="modal-footer">
@@ -997,31 +997,31 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
                 const form = document.getElementById('addContactoForm');
                 const prefix = form.dataset.targetPrefix || 'add';
                 const muni = document.getElementById(prefix + '-id_municipalidad');
-                
+
                 // Get form values
                 const nombreCompleto = form.querySelector('[name="nombre_completo"]').value.trim();
                 const cargo = form.querySelector('[name="cargo"]').value.trim();
                 const telefono = form.querySelector('[name="telefono"]').value.trim();
                 const email = form.querySelector('[name="email"]').value.trim();
-                
+
                 // Validate required fields
                 if (!nombreCompleto) {
                     showWarning('El nombre completo es requerido');
                     form.querySelector('[name="nombre_completo"]').focus();
                     return;
                 }
-                
+
                 if (!cargo) {
                     showWarning('El cargo es requerido');
                     form.querySelector('[name="cargo"]').focus();
                     return;
                 }
-                
+
                 if (!muni.value) {
                     showWarning('No se pudo obtener la municipalidad seleccionada');
                     return;
                 }
-                
+
                 const payload = {
                     id_municipalidad: parseInt(muni.value, 10),
                     nombre_completo: nombreCompleto,
@@ -1029,13 +1029,17 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
                     telefono: telefono,
                     email: email,
                 };
-                
+
                 console.log('Enviando payload:', payload);
-                
-                // Read CSRF token from cookie if present (CakePHP default)
-                const csrfCookie = document.cookie.split('; ').find(r => r.startsWith('csrfToken='));
-                const csrfToken = csrfCookie ? decodeURIComponent(csrfCookie.split('=')[1]) : '';
-                
+
+                // Get CSRF token from the form
+                const csrfToken = document.querySelector('input[name="_csrfToken"]')?.value || '';
+                if (!csrfToken) {
+                    console.error('CSRF token not found');
+                    showWarning('No se pudo verificar la solicitud. Por favor, recargue la página.');
+                    return;
+                }
+
                 try {
                     const res = await fetch('<?= $this->Url->build(['controller' => 'PrimerAcercamiento', 'action' => 'addContacto']) ?>', {
                         method: 'POST',
@@ -1048,10 +1052,18 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
                         },
                         body: JSON.stringify(payload),
                     });
-                    
+
+                    // Check if response is JSON before parsing
+                    const contentType = res.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        const text = await res.text();
+                        console.error('Respuesta no JSON del servidor:', text);
+                        throw new Error('El servidor retornó una respuesta inválida. Revise los logs del servidor.');
+                    }
+
                     const payloadRes = await res.json();
                     console.log('Respuesta del servidor:', payloadRes);
-                    
+
                     if (!res.ok || !payloadRes?.success) {
                         let errorMsg = 'No se pudo crear el contacto';
                         if (payloadRes?.message) {
@@ -1067,19 +1079,19 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
                         }
                         throw new Error(errorMsg);
                     }
-                    
+
                     const newContact = payloadRes.data;
                     // refresh contactos and select the new one
                     const contactoSelect = document.getElementById(prefix + '-id_contacto');
                     const list = await fetchContactos(muni.value);
                     populateSelect(contactoSelect, list, newContact.id);
-                    
+
                     // Clear form
                     form.querySelector('[name="nombre_completo"]').value = '';
                     form.querySelector('[name="cargo"]').value = '';
                     form.querySelector('[name="telefono"]').value = '';
                     form.querySelector('[name="email"]').value = '';
-                    
+
                     bootstrap.Modal.getInstance(document.getElementById('addContactoModal')).hide();
                 } catch (e) {
                     console.error('Error al crear contacto:', e);
