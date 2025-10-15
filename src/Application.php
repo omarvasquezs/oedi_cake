@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -14,6 +15,7 @@ declare(strict_types=1);
  * @since     3.3.0
  * @license   https://opensource.org/licenses/mit-license.php MIT License
  */
+
 namespace App;
 
 use Authentication\AuthenticationService;
@@ -91,7 +93,7 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             // Cross Site Request Forgery (CSRF) Protection Middleware
             // https://book.cakephp.org/5/en/security/csrf.html#cross-site-request-forgery-csrf-middleware
             ->add(new CsrfProtectionMiddleware([
-                'httponly' => true,
+                'httponly' => false,
             ]));
 
         // Add the AuthenticationMiddleware after the CsrfProtectionMiddleware
@@ -108,9 +110,7 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
      * @return void
      * @link https://book.cakephp.org/5/en/development/dependency-injection.html#dependency-injection
      */
-    public function services(ContainerInterface $container): void
-    {
-    }
+    public function services(ContainerInterface $container): void {}
 
     /**
      * Create and return AuthenticationService instance used by the AuthenticationMiddleware.
