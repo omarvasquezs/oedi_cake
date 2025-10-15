@@ -270,4 +270,32 @@ class PrimerAcercamientoController extends AppController
                 'errors' => $entity->getErrors(),
             ]));
     }
+
+    /**
+     * Check if a municipalidad has existing eventos.
+     */
+    public function checkMunicipalidadEventos(): Response
+    {
+        $this->request->allowMethod(['get']);
+        $idMunicipalidad = (int)$this->request->getQuery('id_municipalidad');
+        
+        if ($idMunicipalidad <= 0) {
+            return $this->response->withType('application/json')
+                ->withStringBody(json_encode(['success' => false, 'hasEventos' => false]));
+        }
+
+        $count = $this->Eventos->find()
+            ->where(['id_municipalidad' => $idMunicipalidad])
+            ->count();
+
+        $municipalidad = $this->Eventos->Municipalidades->get($idMunicipalidad);
+
+        return $this->response->withType('application/json')
+            ->withStringBody(json_encode([
+                'success' => true,
+                'hasEventos' => $count > 0,
+                'count' => $count,
+                'municipalidadNombre' => (string)$municipalidad->nombre,
+            ]));
+    }
 }

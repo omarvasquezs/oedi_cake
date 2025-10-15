@@ -157,6 +157,76 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
         opacity: 0.7 !important;
         z-index: 1055 !important;
     }
+
+    /* Confirmation dialog styles */
+    .confirmation-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1070;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .confirmation-dialog {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .confirmation-dialog h5 {
+        margin: 0 0 1rem 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .confirmation-dialog p {
+        margin: 0 0 1.5rem 0;
+        color: #666;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .confirmation-dialog .button-group {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+    }
+
+    .confirmation-dialog .btn {
+        padding: 0.5rem 1.5rem;
+        border-radius: 4px;
+        font-size: 14px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .confirmation-dialog .btn-cancel {
+        background: #6c757d;
+        color: white;
+    }
+
+    .confirmation-dialog .btn-cancel:hover {
+        background: #5a6268;
+    }
+
+    .confirmation-dialog .btn-continue {
+        background: #007bff;
+        color: white;
+    }
+
+    .confirmation-dialog .btn-continue:hover {
+        background: #0056b3;
+    }
 </style>
 
 <div class="primer-index">
@@ -579,6 +649,64 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
             }, 5000);
         };
 
+        // Function to show confirmation dialog
+        const showConfirmation = (message, municipalidadNombre) => {
+            return new Promise((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.className = 'confirmation-overlay';
+                overlay.innerHTML = `
+                    <div class="confirmation-dialog">
+                        <h5>Confirmación</h5>
+                        <p>La municipalidad "${municipalidadNombre}" ya tiene eventos registrados.<br>¿Desea continuar de todos modos?</p>
+                        <div class="button-group">
+                            <button class="btn btn-cancel" data-action="cancel">Cancelar</button>
+                            <button class="btn btn-continue" data-action="continue">Continuar</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+
+                const handleClick = (e) => {
+                    const action = e.target.dataset.action;
+                    if (action) {
+                        overlay.remove();
+                        resolve(action === 'continue');
+                    }
+                };
+
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        overlay.remove();
+                        resolve(false);
+                    }
+                });
+
+                overlay.querySelectorAll('[data-action]').forEach(btn => {
+                    btn.addEventListener('click', handleClick);
+                });
+            });
+        };
+
+        // Function to check if municipalidad has eventos
+        async function checkMunicipalidadHasEventos(idMunicipalidad) {
+            const url = new URL('<?= $this->Url->build(['controller' => 'PrimerAcercamiento', 'action' => 'checkMunicipalidadEventos']) ?>', window.location.origin);
+            url.searchParams.set('id_municipalidad', idMunicipalidad);
+            try {
+                const res = await fetch(url.toString(), {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                if (!res.ok) return null;
+                const payload = await res.json();
+                if (!payload || payload.success !== true) return null;
+                return payload;
+            } catch (e) {
+                console.error('Error checking municipalidad eventos:', e);
+                return null;
+            }
+        }
+
         async function fetchContactos(idMunicipalidad, q = '') {
             const url = new URL('<?= $this->Url->build(['controller' => 'PrimerAcercamiento', 'action' => 'contactsByMunicipalidad']) ?>', window.location.origin);
             url.searchParams.set('id_municipalidad', idMunicipalidad);
@@ -613,13 +741,36 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
             const muni = document.getElementById(prefix + '-id_municipalidad');
             const contacto = document.getElementById(prefix + '-id_contacto');
             if (!muni || !contacto) return;
-            contacto.innerHTML = '<option value="">Cargando...</option>';
-            if (!muni.value) {
+            
+            const selectedValue = muni.value;
+            
+            if (!selectedValue) {
                 populateSelect(contacto, []);
                 return;
             }
+
+            // Only check for existing eventos when adding (not when editing)
+            if (prefix === 'add') {
+                const checkResult = await checkMunicipalidadHasEventos(selectedValue);
+                if (checkResult && checkResult.hasEventos) {
+                    const shouldContinue = await showConfirmation(
+                        checkResult.count > 0 ? `${checkResult.count} evento(s)` : 'eventos',
+                        checkResult.municipalidadNombre
+                    );
+                    
+                    if (!shouldContinue) {
+                        // User cancelled, reset the select
+                        muni.value = '';
+                        populateSelect(contacto, []);
+                        return;
+                    }
+                }
+            }
+
+            // Load contacts
+            contacto.innerHTML = '<option value="">Cargando...</option>';
             try {
-                const data = await fetchContactos(muni.value);
+                const data = await fetchContactos(selectedValue);
                 populateSelect(contacto, data);
             } catch (e) {
                 populateSelect(contacto, []);
