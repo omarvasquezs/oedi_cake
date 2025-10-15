@@ -741,9 +741,9 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
             const muni = document.getElementById(prefix + '-id_municipalidad');
             const contacto = document.getElementById(prefix + '-id_contacto');
             if (!muni || !contacto) return;
-            
+
             const selectedValue = muni.value;
-            
+
             if (!selectedValue) {
                 populateSelect(contacto, []);
                 return;
@@ -757,7 +757,7 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
                         checkResult.count > 0 ? `${checkResult.count} evento(s)` : 'eventos',
                         checkResult.municipalidadNombre
                     );
-                    
+
                     if (!shouldContinue) {
                         // User cancelled, reset the select
                         muni.value = '';
@@ -997,16 +997,45 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
                 const form = document.getElementById('addContactoForm');
                 const prefix = form.dataset.targetPrefix || 'add';
                 const muni = document.getElementById(prefix + '-id_municipalidad');
+                
+                // Get form values
+                const nombreCompleto = form.querySelector('[name="nombre_completo"]').value.trim();
+                const cargo = form.querySelector('[name="cargo"]').value.trim();
+                const telefono = form.querySelector('[name="telefono"]').value.trim();
+                const email = form.querySelector('[name="email"]').value.trim();
+                
+                // Validate required fields
+                if (!nombreCompleto) {
+                    showWarning('El nombre completo es requerido');
+                    form.querySelector('[name="nombre_completo"]').focus();
+                    return;
+                }
+                
+                if (!cargo) {
+                    showWarning('El cargo es requerido');
+                    form.querySelector('[name="cargo"]').focus();
+                    return;
+                }
+                
+                if (!muni.value) {
+                    showWarning('No se pudo obtener la municipalidad seleccionada');
+                    return;
+                }
+                
                 const payload = {
-                    id_municipalidad: muni.value,
-                    nombre_completo: form.querySelector('[name="nombre_completo"]').value,
-                    cargo: form.querySelector('[name="cargo"]').value,
-                    telefono: form.querySelector('[name="telefono"]').value,
-                    email: form.querySelector('[name="email"]').value,
+                    id_municipalidad: parseInt(muni.value, 10),
+                    nombre_completo: nombreCompleto,
+                    cargo: cargo,
+                    telefono: telefono,
+                    email: email,
                 };
+                
+                console.log('Enviando payload:', payload);
+                
                 // Read CSRF token from cookie if present (CakePHP default)
                 const csrfCookie = document.cookie.split('; ').find(r => r.startsWith('csrfToken='));
                 const csrfToken = csrfCookie ? decodeURIComponent(csrfCookie.split('=')[1]) : '';
+                
                 try {
                     const res = await fetch('<?= $this->Url->build(['controller' => 'PrimerAcercamiento', 'action' => 'addContacto']) ?>', {
                         method: 'POST',
@@ -1019,16 +1048,42 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
                         },
                         body: JSON.stringify(payload),
                     });
+                    
                     const payloadRes = await res.json();
-                    if (!res.ok || !payloadRes?.success) throw new Error('Error');
+                    console.log('Respuesta del servidor:', payloadRes);
+                    
+                    if (!res.ok || !payloadRes?.success) {
+                        let errorMsg = 'No se pudo crear el contacto';
+                        if (payloadRes?.message) {
+                            errorMsg = payloadRes.message;
+                        }
+                        if (payloadRes?.errors) {
+                            console.error('Errores de validación:', payloadRes.errors);
+                            // Show first error
+                            const firstError = Object.values(payloadRes.errors).flat()[0];
+                            if (firstError) {
+                                errorMsg += ': ' + firstError;
+                            }
+                        }
+                        throw new Error(errorMsg);
+                    }
+                    
                     const newContact = payloadRes.data;
                     // refresh contactos and select the new one
                     const contactoSelect = document.getElementById(prefix + '-id_contacto');
                     const list = await fetchContactos(muni.value);
                     populateSelect(contactoSelect, list, newContact.id);
+                    
+                    // Clear form
+                    form.querySelector('[name="nombre_completo"]').value = '';
+                    form.querySelector('[name="cargo"]').value = '';
+                    form.querySelector('[name="telefono"]').value = '';
+                    form.querySelector('[name="email"]').value = '';
+                    
                     bootstrap.Modal.getInstance(document.getElementById('addContactoModal')).hide();
                 } catch (e) {
-                    showWarning('No se pudo crear el contacto');
+                    console.error('Error al crear contacto:', e);
+                    showWarning(e.message || 'No se pudo crear el contacto');
                 }
             });
         }

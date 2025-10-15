@@ -251,8 +251,14 @@ class PrimerAcercamientoController extends AppController
         $contactosTable = $this->fetchTable('Contactos');
         $payload = $this->request->input('json_decode', true) ?? [];
 
+        // Ensure id_municipalidad is an integer
+        if (isset($payload['id_municipalidad'])) {
+            $payload['id_municipalidad'] = (int)$payload['id_municipalidad'];
+        }
+
         $entity = $contactosTable->newEmptyEntity();
         $entity = $contactosTable->patchEntity($entity, $payload);
+        
         if ($contactosTable->save($entity)) {
             return $this->response->withType('application/json')
                 ->withStringBody(json_encode([
@@ -264,9 +270,11 @@ class PrimerAcercamientoController extends AppController
                 ]));
         }
 
+        // Return detailed error information
         return $this->response->withType('application/json')
             ->withStringBody(json_encode([
                 'success' => false,
+                'message' => 'No se pudo crear el contacto',
                 'errors' => $entity->getErrors(),
             ]));
     }
@@ -278,7 +286,7 @@ class PrimerAcercamientoController extends AppController
     {
         $this->request->allowMethod(['get']);
         $idMunicipalidad = (int)$this->request->getQuery('id_municipalidad');
-        
+
         if ($idMunicipalidad <= 0) {
             return $this->response->withType('application/json')
                 ->withStringBody(json_encode(['success' => false, 'hasEventos' => false]));
