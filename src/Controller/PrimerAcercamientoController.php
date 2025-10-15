@@ -26,23 +26,6 @@ class PrimerAcercamientoController extends AppController
     }
 
     /**
-     * Before filter callback.
-     *
-     * @param \Cake\Event\EventInterface $event Event.
-     * @return \Cake\Http\Response|null|void
-     */
-    public function beforeFilter(\Cake\Event\EventInterface $event)
-    {
-        parent::beforeFilter($event);
-        
-        // Disable CSRF check for AJAX JSON endpoints
-        $action = $this->request->getParam('action');
-        if (in_array($action, ['addContacto', 'contactsByMunicipalidad', 'checkMunicipalidadEventos'])) {
-            $this->getEventManager()->off($this->Csrf);
-        }
-    }
-
-    /**
      * List eventos (primer acercamiento) with search, filters and pagination.
      *
      * @return void
@@ -266,7 +249,7 @@ class PrimerAcercamientoController extends AppController
     {
         $this->request->allowMethod(['post']);
         $contactosTable = $this->fetchTable('Contactos');
-        $payload = $this->request->input('json_decode', true) ?? [];
+        $payload = $this->request->getParsedBody() ?? [];
 
         // Ensure id_municipalidad is an integer
         if (isset($payload['id_municipalidad'])) {
@@ -275,25 +258,38 @@ class PrimerAcercamientoController extends AppController
 
         $entity = $contactosTable->newEmptyEntity();
         $entity = $contactosTable->patchEntity($entity, $payload);
-        
-        if ($contactosTable->save($entity)) {
+
+        try {
+            if ($contactosTable->save($entity)) {
+                return $this->response->withType('application/json')
+                    ->withStringBody(json_encode([
+                        'success' => true,
+                        'data' => [
+                            'id' => (int)$entity->id_contacto,
+                            'text' => (string)$entity->nombre_completo,
+                        ],
+                    ]));
+            }
+
+            // Return detailed error information
             return $this->response->withType('application/json')
+                ->withStatus(422) // Unprocessable Entity
                 ->withStringBody(json_encode([
-                    'success' => true,
-                    'data' => [
-                        'id' => (int)$entity->id_contacto,
-                        'text' => (string)$entity->nombre_completo,
-                    ],
+                    'success' => false,
+                    'message' => 'No se pudo crear el contacto debido a errores de validación',
+                    'errors' => $entity->getErrors(),
+                ]));
+        } catch (\Exception $e) {
+            // Log the exception if needed
+            // Log::error($e->getMessage());
+            return $this->response->withType('application/json')
+                ->withStatus(500)
+                ->withStringBody(json_encode([
+                    'success' => false,
+                    'message' => 'Ocurrió un error interno al guardar el contacto.',
+                    'error' => $e->getMessage(), // Be careful about exposing error details
                 ]));
         }
-
-        // Return detailed error information
-        return $this->response->withType('application/json')
-            ->withStringBody(json_encode([
-                'success' => false,
-                'message' => 'No se pudo crear el contacto',
-                'errors' => $entity->getErrors(),
-            ]));
     }
 
     /**
