@@ -26,6 +26,23 @@ class PrimerAcercamientoController extends AppController
     }
 
     /**
+     * Before filter callback.
+     *
+     * @param \Cake\Event\EventInterface $event Event.
+     * @return \Cake\Http\Response|null|void
+     */
+    public function beforeFilter(\Cake\Event\EventInterface $event)
+    {
+        parent::beforeFilter($event);
+        
+        // Disable CSRF check for AJAX JSON endpoints
+        $action = $this->request->getParam('action');
+        if (in_array($action, ['addContacto', 'contactsByMunicipalidad', 'checkMunicipalidadEventos'])) {
+            $this->getEventManager()->off($this->Csrf);
+        }
+    }
+
+    /**
      * List eventos (primer acercamiento) with search, filters and pagination.
      *
      * @return void
