@@ -75,7 +75,7 @@ class PrimerAcercamientoController extends AppController
             $query->where(['Eventos.fecha' => $filterFecha]);
         }
 
-        $query->order(['Eventos.fecha' => 'DESC']);
+        $query->orderBy(['Eventos.fecha' => 'DESC']);
 
         $this->paginate = [
             'limit' => $perPage,
@@ -85,7 +85,7 @@ class PrimerAcercamientoController extends AppController
         // Options for modal selects
         $muniRows = $this->Eventos->Municipalidades->find()
             ->select(['id_municipalidad', 'nombre', 'ubigeo', 'departamento'])
-            ->order(['nombre' => 'ASC'])
+            ->orderBy(['nombre' => 'ASC'])
             ->all();
         $municipalidadesOptions = [];
         foreach ($muniRows as $m) {
@@ -218,7 +218,7 @@ class PrimerAcercamientoController extends AppController
         $query = $contactosTable->find()
             ->select(['id_contacto', 'nombre_completo', 'cargo'])
             ->where(['id_municipalidad' => $idMunicipalidad])
-            ->order(['nombre_completo' => 'ASC']);
+            ->orderBy(['nombre_completo' => 'ASC']);
         if ($q !== '') {
             $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $q) . '%';
             $query->where(function ($exp) use ($like) {
