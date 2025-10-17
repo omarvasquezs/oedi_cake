@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Controller;
@@ -206,6 +207,12 @@ class UsersController extends AppController
 
     public function login()
     {
+        // if user is logged in, redirect to dashboard
+        $identity = $this->getRequest()->getAttribute('identity');
+        if ($identity) {
+            return $this->redirect(['controller' => 'Dashboard', 'action' => 'index']);
+        }
+
         $this->request->allowMethod(['get', 'post']);
 
         // If the Authentication plugin is available, the middleware will set an
