@@ -120,21 +120,23 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
      */
     public function getAuthenticationService(ServerRequestInterface $request): AuthenticationServiceInterface
     {
-        $service = new AuthenticationService();
-
-        // Load authenticators with identifier config directly (updated for Authentication 3.x)
-        $service->loadAuthenticator('Authentication.Session');
-        $service->loadAuthenticator('Authentication.Form', [
-            'fields' => [
-                'username' => 'username',
-                'password' => 'password',
+        $service = new AuthenticationService([
+            'identifiers' => [
+                'Authentication.Password' => [
+                    'fields' => [
+                        'username' => 'username',
+                        'password' => 'password',
+                    ],
+                ],
             ],
-            'loginUrl' => '/login',
-            'identifier' => [
-                'className' => 'Authentication.Password',
-                'fields' => [
-                    'username' => 'username',
-                    'password' => 'password',
+            'authenticators' => [
+                'Authentication.Session',
+                'Authentication.Form' => [
+                    'fields' => [
+                        'username' => 'username',
+                        'password' => 'password',
+                    ],
+                    'loginUrl' => '/login',
                 ],
             ],
         ]);
