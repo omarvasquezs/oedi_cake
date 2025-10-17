@@ -7,7 +7,7 @@ use Cake\Event\EventInterface;
 
 class UsersController extends AppController
 {
-    public function beforeFilter(EventInterface $event)
+    public function beforeFilter(EventInterface $event): void
     {
         parent::beforeFilter($event);
         // allow the login action so unauthenticated users can access it
