@@ -122,15 +122,7 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
     {
         $service = new AuthenticationService();
 
-        // Load identifiers, you can add more (e.g. IdentifierCollection)
-        $service->loadIdentifier('Authentication.Password', [
-            'fields' => [
-                'username' => 'username',
-                'password' => 'password',
-            ],
-        ]);
-
-        // Load authenticators. Session and Form (POST) based
+        // Load authenticators with identifier config directly (updated for Authentication 3.x)
         $service->loadAuthenticator('Authentication.Session');
         $service->loadAuthenticator('Authentication.Form', [
             'fields' => [
@@ -138,6 +130,13 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
                 'password' => 'password',
             ],
             'loginUrl' => '/login',
+            'identifier' => [
+                'className' => 'Authentication.Password',
+                'fields' => [
+                    'username' => 'username',
+                    'password' => 'password',
+                ],
+            ],
         ]);
 
         return $service;

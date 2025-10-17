@@ -58,7 +58,7 @@ class AppController extends Controller
      */
     public function beforeFilter(
         EventInterface $event,
-    ) {
+    ): void {
         parent::beforeFilter($event);
 
         $controller = $this->getRequest()->getParam('controller');
@@ -67,7 +67,6 @@ class AppController extends Controller
         // If the request is Users::login or Users::register, use the clean login layout and allow access
         if ($controller === 'Users' && ($action === 'login' || $action === 'register')) {
             $this->viewBuilder()->setLayout('login');
-
             return;
         }
 
@@ -80,7 +79,8 @@ class AppController extends Controller
 
         if (!$identity && !$sessionUser) {
             // Redirect unauthenticated users to login
-            return $this->redirect(['controller' => 'Users', 'action' => 'login']);
+            $event->setResult($this->redirect(['controller' => 'Users', 'action' => 'login']));
+            $event->stopPropagation();
         }
     }
 }
