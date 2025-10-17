@@ -63,3 +63,4 @@ config/.env.local
 
 # CakePHP schema dump lock
 schema-dump-default.lock
+*.sql
