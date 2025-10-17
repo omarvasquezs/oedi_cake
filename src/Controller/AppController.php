@@ -82,6 +82,47 @@ class AppController extends Controller
             // Redirect unauthenticated users to login
             $event->setResult($this->redirect(['controller' => 'Users', 'action' => 'login']));
             $event->stopPropagation();
+        } else {
+            // Pass user role info to all views
+            $this->set('isSuperAdmin', $this->hasRole('super-admin'));
         }
+    }
+
+    /**
+     * Check if the current user has a specific role.
+     *
+     * @param string $roleName The role name to check
+     * @return bool
+     */
+    protected function hasRole(string $roleName): bool
+    {
+        $sessionUser = $this->getRequest()->getSession()->read('Auth.User');
+        if (!is_array($sessionUser) || empty($sessionUser['id'])) {
+            return false;
+        }
+
+        $userId = (int)$sessionUser['id'];
+        $modelHasRolesTable = $this->getTableLocator()->get('ModelHasRoles');
+        $rolesTable = $this->getTableLocator()->get('Roles');
+
+        // Get user's roles
+        $userRoles = $modelHasRolesTable->find()
+            ->where([
+                'model_id' => $userId,
+                'model_type' => 'App\Model\Entity\User',
+            ])
+            ->all();
+
+        foreach ($userRoles as $userRole) {
+            $role = $rolesTable->find()
+                ->where(['id' => $userRole->role_id])
+                ->first();
+
+            if ($role && $role->name === $roleName) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

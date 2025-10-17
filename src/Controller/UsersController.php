@@ -19,6 +19,12 @@ class UsersController extends AppController
 
     public function index()
     {
+        // Only super-admin can access user management
+        if (!$this->hasRole('super-admin')) {
+            $this->Flash->error(__('No tiene permisos para acceder a esta sección.'));
+            return $this->redirect(['controller' => 'Dashboard', 'action' => 'index']);
+        }
+
         $this->set('title', 'Usuarios');
 
         // Get items per page from query string, default to 10

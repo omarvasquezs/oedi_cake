@@ -84,6 +84,7 @@ $currentAction = $this->request->getParam('action');
         <details <?= (in_array($currentController, ['Users', 'Settings'])) ? 'open' : '' ?>>
             <summary><i class="fa-solid fa-gear"></i> Configuración</summary>
             <ul>
+                <?php if (isset($isSuperAdmin) && $isSuperAdmin): ?>
                 <li>
                     <details <?= ($currentController === 'Users' && $currentAction === 'index') ? 'open' : '' ?>>
                         <summary><i class="fa-solid fa-users"></i> Usuarios</summary>
@@ -92,6 +93,7 @@ $currentAction = $this->request->getParam('action');
                         </ul>
                     </details>
                 </li>
+                <?php endif; ?>
                 <li>
                     <details <?= ($currentController === 'Users' && $currentAction === 'profile') ? 'open' : '' ?>>
                         <summary><i class="fa-solid fa-user"></i> Perfil</summary>
