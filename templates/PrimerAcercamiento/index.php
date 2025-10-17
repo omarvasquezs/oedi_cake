@@ -519,83 +519,33 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
 
 <?php $this->start('script'); ?>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const searchInput = document.getElementById('searchInput');
-        const searchForm = document.getElementById('searchForm');
-        let searchTimeout;
-        if (searchInput) {
-            searchInput.addEventListener('input', function() {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(function() {
-                    searchForm.submit();
-                }, 500);
-            });
-            searchInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    clearTimeout(searchTimeout);
-                    searchForm.submit();
-                }
-            });
-        }
-    });
+    // ==================================================================================
+    // Function Definitions
+    // ==================================================================================
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const toggleFiltersBtn = document.getElementById('toggleFilters');
-        const filterRow = document.getElementById('filterRow');
-        const mainSearchContainer = document.getElementById('mainSearchContainer');
-        const filterMunicipalidad = document.getElementById('filterMunicipalidad');
-        const filterModalidad = document.getElementById('filterModalidad');
-        const filterFecha = document.getElementById('filterFecha');
-        let filterTimeout;
-        toggleFiltersBtn.addEventListener('click', function() {
-            const isVisible = filterRow.style.display !== 'none';
-            if (isVisible) {
-                window.location.href = '<?= $this->Url->build(['action' => 'index', '?' => ['per_page' => $perPage]]) ?>';
-            } else {
-                filterRow.style.display = '';
-                mainSearchContainer.setAttribute('hidden', '');
-                toggleFiltersBtn.innerHTML = '<i class="fa-solid fa-times"></i> CERRAR FILTROS';
-                if (filterMunicipalidad) filterMunicipalidad.focus();
-            }
-        });
-
-        function applyFilters() {
-            const url = new URL(window.location.href);
-            url.searchParams.delete('search');
-            (filterMunicipalidad.value) ? url.searchParams.set('filter_municipalidad', filterMunicipalidad.value): url.searchParams.delete('filter_municipalidad');
-            (filterModalidad.value) ? url.searchParams.set('filter_modalidad', filterModalidad.value): url.searchParams.delete('filter_modalidad');
-            (filterFecha.value) ? url.searchParams.set('filter_fecha', filterFecha.value): url.searchParams.delete('filter_fecha');
-            url.searchParams.set('page', 1);
-            window.location.href = url.toString();
-        }
-        [filterMunicipalidad, filterModalidad, filterFecha].forEach(input => {
-            if (input) {
-                input.addEventListener('input', function() {
-                    clearTimeout(filterTimeout);
-                    filterTimeout = setTimeout(function() {
-                        applyFilters();
-                    }, 500);
-                });
-            }
-        });
-    });
-
-    function openEditModal(ev) {
+    async function openEditModal(ev) {
         const form = document.getElementById('editEventoForm');
         form.setAttribute('action', "<?= $this->Url->build(['controller' => 'PrimerAcercamiento', 'action' => 'edit']) ?>/" + ev.id_evento);
         document.getElementById('edit-id').value = ev.id_evento;
         document.getElementById('edit-id_municipalidad').value = ev.id_municipalidad;
-        document.getElementById('edit-id_contacto').value = ev.id_contacto;
         document.getElementById('edit-tipo_acercamiento').value = ev.tipo_acercamiento || '';
         document.getElementById('edit-lugar').value = ev.lugar || '';
         document.getElementById('edit-fecha').value = ev.fecha ? ev.fecha.substring(0, 10) : '';
         document.getElementById('edit-modalidad').value = ev.modalidad || '';
         document.getElementById('edit-descripcion').value = ev.descripcion || '';
+
+        if (ev.id_municipalidad) {
+            await handleMunicipioChange('edit', ev.id_contacto);
+            const muniSelect = document.getElementById('edit-id_municipalidad');
+            if (muniSelect) {
+                muniSelect.dispatchEvent(new Event('change'));
+            }
+        }
+
         try {
             new bootstrap.Modal(document.getElementById('editEventoModal')).show();
         } catch (err) {
-            console.error(err);
+            console.error('Error showing edit modal:', err);
         }
     }
 
@@ -606,128 +556,104 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
         window.location.href = url.toString();
     }
 
-    // Dependent selects and new-contact flow
-    document.addEventListener('DOMContentLoaded', function() {
-        // Availability of municipalidades options for client-side search
-        const MUNICIPALIDADES_OPTIONS = <?= json_encode(array_map(function ($o) {
-                                            return ['id' => $o['id'], 'text' => $o['label']];
-                                        }, $municipalidadesOptions ?? []), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>;
-
-        const showWarning = (msg, targetElement = null) => {
-            // Create a more prominent warning similar to the image
-            const el = document.createElement('div');
-            el.className = 'alert alert-warning d-flex align-items-center position-fixed top-0 start-50 translate-middle-x mt-3';
-            el.style.zIndex = 2000;
-            el.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
-            el.style.minWidth = '300px';
-            el.innerHTML = `
-                <i class="fa-solid fa-triangle-exclamation me-2"></i>
-                <div>
-                    <strong>Advertencia</strong><br>
-                    ${msg}
-                </div>
-                <button type="button" class="btn-close ms-auto" aria-label="Close"></button>
-            `;
-            document.body.appendChild(el);
-
-            // Add click handler to close button
-            el.querySelector('.btn-close').addEventListener('click', () => el.remove());
-
-            // Add visual feedback to the target element
-            if (targetElement) {
-                targetElement.classList.add('border-warning');
-                targetElement.style.borderWidth = '2px';
-                setTimeout(() => {
-                    targetElement.classList.remove('border-warning');
-                    targetElement.style.borderWidth = '';
-                }, 3000);
-            }
-
-            // Auto-remove after 5 seconds
+    function showWarning(msg, targetElement = null) {
+        const el = document.createElement('div');
+        el.className = 'alert alert-warning d-flex align-items-center position-fixed top-0 start-50 translate-middle-x mt-3';
+        el.style.zIndex = 2000;
+        el.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+        el.style.minWidth = '300px';
+        el.innerHTML = `
+            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+            <div><strong>Advertencia</strong><br>${msg}</div>
+            <button type="button" class="btn-close ms-auto" aria-label="Close"></button>
+        `;
+        document.body.appendChild(el);
+        el.querySelector('.btn-close').addEventListener('click', () => el.remove());
+        if (targetElement) {
+            targetElement.classList.add('border-warning');
+            targetElement.style.borderWidth = '2px';
             setTimeout(() => {
-                if (el.parentNode) el.remove();
-            }, 5000);
-        };
-
-        // Function to show confirmation dialog
-        const showConfirmation = (message, municipalidadNombre) => {
-            return new Promise((resolve) => {
-                const overlay = document.createElement('div');
-                overlay.className = 'confirmation-overlay';
-                overlay.innerHTML = `
-                    <div class="confirmation-dialog">
-                        <h5>Confirmación</h5>
-                        <p>La municipalidad "${municipalidadNombre}" ya tiene eventos registrados.<br>¿Desea continuar de todos modos?</p>
-                        <div class="button-group">
-                            <button class="btn btn-cancel" data-action="cancel">Cancelar</button>
-                            <button class="btn btn-continue" data-action="continue">Continuar</button>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(overlay);
-
-                const handleClick = (e) => {
-                    const action = e.target.dataset.action;
-                    if (action) {
-                        overlay.remove();
-                        resolve(action === 'continue');
-                    }
-                };
-
-                overlay.addEventListener('click', (e) => {
-                    if (e.target === overlay) {
-                        overlay.remove();
-                        resolve(false);
-                    }
-                });
-
-                overlay.querySelectorAll('[data-action]').forEach(btn => {
-                    btn.addEventListener('click', handleClick);
-                });
-            });
-        };
-
-        // Function to check if municipalidad has eventos
-        async function checkMunicipalidadHasEventos(idMunicipalidad) {
-            const url = new URL('<?= $this->Url->build(['controller' => 'PrimerAcercamiento', 'action' => 'checkMunicipalidadEventos']) ?>', window.location.origin);
-            url.searchParams.set('id_municipalidad', idMunicipalidad);
-            try {
-                const res = await fetch(url.toString(), {
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
-                if (!res.ok) return null;
-                const payload = await res.json();
-                if (!payload || payload.success !== true) return null;
-                return payload;
-            } catch (e) {
-                console.error('Error checking municipalidad eventos:', e);
-                return null;
-            }
+                targetElement.classList.remove('border-warning');
+                targetElement.style.borderWidth = '';
+            }, 3000);
         }
+        setTimeout(() => {
+            if (el.parentNode) el.remove();
+        }, 5000);
+    }
 
-        async function fetchContactos(idMunicipalidad, q = '') {
-            const url = new URL('<?= $this->Url->build(['controller' => 'PrimerAcercamiento', 'action' => 'contactsByMunicipalidad']) ?>', window.location.origin);
-            url.searchParams.set('id_municipalidad', idMunicipalidad);
-            if (q) url.searchParams.set('q', q);
+    function showConfirmation(message, municipalidadNombre) {
+        return new Promise((resolve) => {
+            const overlay = document.createElement('div');
+            overlay.className = 'confirmation-overlay';
+            overlay.innerHTML = `
+                <div class="confirmation-dialog">
+                    <h5>Confirmación</h5>
+                    <p>La municipalidad "${municipalidadNombre}" ya tiene eventos registrados.<br>¿Desea continuar de todos modos?</p>
+                    <div class="button-group">
+                        <button class="btn btn-cancel" data-action="cancel">Cancelar</button>
+                        <button class="btn btn-continue" data-action="continue">Continuar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            const handleClick = (e) => {
+                const action = e.target.dataset.action;
+                if (action) {
+                    overlay.remove();
+                    resolve(action === 'continue');
+                }
+            };
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.remove();
+                    resolve(false);
+                }
+            });
+            overlay.querySelectorAll('[data-action]').forEach(btn => btn.addEventListener('click', handleClick));
+        });
+    }
+
+    async function checkMunicipalidadHasEventos(idMunicipalidad) {
+        const url = new URL('<?= $this->Url->build(['controller' => 'PrimerAcercamiento', 'action' => 'checkMunicipalidadEventos']) ?>', window.location.origin);
+        url.searchParams.set('id_municipalidad', idMunicipalidad);
+        try {
             const res = await fetch(url.toString(), {
                 headers: {
                     'Accept': 'application/json'
                 }
             });
-            if (!res.ok) throw new Error('Error cargando contactos');
+            if (!res.ok) return null;
             const payload = await res.json();
-            if (!payload || payload.success !== true) return [];
-            return payload.data || [];
+            return (payload && payload.success === true) ? payload : null;
+        } catch (e) {
+            console.error('Error checking municipalidad eventos:', e);
+            return null;
         }
+    }
 
-        function populateSelect(selectEl, items, selectedId = null) {
-            selectEl.innerHTML = '';
-            const empty = document.createElement('option');
-            empty.value = '';
-            empty.textContent = 'Seleccione un contacto';
-            selectEl.appendChild(empty);
+    async function fetchContactos(idMunicipalidad, q = '') {
+        const url = new URL('<?= $this->Url->build(['controller' => 'PrimerAcercamiento', 'action' => 'contactsByMunicipalidad']) ?>', window.location.origin);
+        url.searchParams.set('id_municipalidad', idMunicipalidad);
+        if (q) url.searchParams.set('q', q);
+        const res = await fetch(url.toString(), {
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+        if (!res.ok) throw new Error('Error cargando contactos');
+        const payload = await res.json();
+        if (!payload || payload.success !== true) return [];
+        return payload.data || [];
+    }
+
+    function populateSelect(selectEl, items, selectedId = null) {
+        selectEl.innerHTML = '';
+        const empty = document.createElement('option');
+        empty.value = '';
+        empty.textContent = 'Seleccione un contacto';
+        selectEl.appendChild(empty);
+        if (items && Array.isArray(items)) {
             items.forEach(i => {
                 const opt = document.createElement('option');
                 opt.value = i.id;
@@ -736,141 +662,169 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
                 selectEl.appendChild(opt);
             });
         }
+    }
 
-        async function handleMunicipioChange(prefix) {
-            const muni = document.getElementById(prefix + '-id_municipalidad');
-            const contacto = document.getElementById(prefix + '-id_contacto');
-            if (!muni || !contacto) return;
+    async function handleMunicipioChange(prefix, selectedContactoId = null) {
+        const muni = document.getElementById(prefix + '-id_municipalidad');
+        const contacto = document.getElementById(prefix + '-id_contacto');
+        if (!muni || !contacto) return;
 
-            const selectedValue = muni.value;
+        const selectedValue = muni.value;
+        if (!selectedValue) {
+            populateSelect(contacto, []);
+            return;
+        }
 
-            if (!selectedValue) {
-                populateSelect(contacto, []);
-                return;
-            }
+        const currentContactoId = contacto.value;
+        const idToSelect = selectedContactoId || currentContactoId;
 
-            // Only check for existing eventos when adding (not when editing)
-            if (prefix === 'add') {
-                const checkResult = await checkMunicipalidadHasEventos(selectedValue);
-                if (checkResult && checkResult.hasEventos) {
-                    const shouldContinue = await showConfirmation(
-                        checkResult.count > 0 ? `${checkResult.count} evento(s)` : 'eventos',
-                        checkResult.municipalidadNombre
-                    );
-
-                    if (!shouldContinue) {
-                        // User cancelled, reset the select
-                        muni.value = '';
-                        populateSelect(contacto, []);
-                        return;
-                    }
+        if (prefix === 'add') {
+            const checkResult = await checkMunicipalidadHasEventos(selectedValue);
+            if (checkResult && checkResult.hasEventos) {
+                const shouldContinue = await showConfirmation(
+                    checkResult.count > 0 ? `${checkResult.count} evento(s)` : 'eventos',
+                    checkResult.municipalidadNombre
+                );
+                if (!shouldContinue) {
+                    muni.value = '';
+                    populateSelect(contacto, []);
+                    return;
                 }
             }
-
-            // Load contacts
-            contacto.innerHTML = '<option value="">Cargando...</option>';
-            try {
-                const data = await fetchContactos(selectedValue);
-                populateSelect(contacto, data);
-            } catch (e) {
-                populateSelect(contacto, []);
-            }
         }
+
+        contacto.innerHTML = '<option value="">Cargando...</option>';
+        try {
+            const data = await fetchContactos(selectedValue);
+            populateSelect(contacto, data, idToSelect);
+        } catch (e) {
+            populateSelect(contacto, []);
+        }
+    }
+
+    // ==================================================================================
+    // DOMContentLoaded Listeners
+    // ==================================================================================
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const searchForm = document.getElementById('searchForm');
+        let searchTimeout;
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => searchForm.submit(), 500);
+            });
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    clearTimeout(searchTimeout);
+                    searchForm.submit();
+                }
+            });
+        }
+
+        // Filters functionality
+        const toggleFiltersBtn = document.getElementById('toggleFilters');
+        const filterRow = document.getElementById('filterRow');
+        const mainSearchContainer = document.getElementById('mainSearchContainer');
+        const filterMunicipalidad = document.getElementById('filterMunicipalidad');
+        const filterModalidad = document.getElementById('filterModalidad');
+        const filterFecha = document.getElementById('filterFecha');
+        let filterTimeout;
+
+        if (toggleFiltersBtn) {
+            toggleFiltersBtn.addEventListener('click', () => {
+                const isVisible = filterRow.style.display !== 'none';
+                if (isVisible) {
+                    window.location.href = '<?= $this->Url->build(['action' => 'index', '?' => ['per_page' => $perPage]]) ?>';
+                } else {
+                    filterRow.style.display = '';
+                    mainSearchContainer.setAttribute('hidden', '');
+                    toggleFiltersBtn.innerHTML = '<i class="fa-solid fa-times"></i> CERRAR FILTROS';
+                    if (filterMunicipalidad) filterMunicipalidad.focus();
+                }
+            });
+        }
+
+        function applyFilters() {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('search');
+            (filterMunicipalidad.value) ? url.searchParams.set('filter_municipalidad', filterMunicipalidad.value): url.searchParams.delete('filter_municipalidad');
+            (filterModalidad.value) ? url.searchParams.set('filter_modalidad', filterModalidad.value): url.searchParams.delete('filter_modalidad');
+            (filterFecha.value) ? url.searchParams.set('filter_fecha', filterFecha.value): url.searchParams.delete('filter_fecha');
+            url.searchParams.set('page', 1);
+            window.location.href = url.toString();
+        }
+
+        [filterMunicipalidad, filterModalidad, filterFecha].forEach(input => {
+            if (input) {
+                input.addEventListener('input', () => {
+                    clearTimeout(filterTimeout);
+                    filterTimeout = setTimeout(applyFilters, 500);
+                });
+            }
+        });
+
+        // Dependent selects and new-contact flow
+        const MUNICIPALIDADES_OPTIONS = <?= json_encode(array_map(function ($o) {
+                                            return ['id' => $o['id'], 'text' => $o['label']];
+                                        }, $municipalidadesOptions ?? []), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>;
 
         ['add', 'edit'].forEach(prefix => {
             const muni = document.getElementById(prefix + '-id_municipalidad');
             const contacto = document.getElementById(prefix + '-id_contacto');
-
-            console.log(`Configurando validación para ${prefix}:`, {
-                muni,
-                contacto
-            });
 
             if (muni) {
                 muni.addEventListener('change', () => handleMunicipioChange(prefix));
             }
 
             if (contacto && muni) {
-                // Disable the select until municipalidad is selected
                 const checkMunicipality = () => {
                     const hasValue = muni.value && muni.value !== '';
-                    console.log(`${prefix} - checkMunicipality:`, {
-                        value: muni.value,
-                        hasValue
-                    });
-
-                    if (!hasValue) {
-                        contacto.disabled = true;
-                        contacto.style.cursor = 'not-allowed';
-                        contacto.style.backgroundColor = '#f5f5f5';
-                    } else {
-                        contacto.disabled = false;
-                        contacto.style.cursor = '';
-                        contacto.style.backgroundColor = '';
-                    }
+                    contacto.disabled = !hasValue;
+                    contacto.style.cursor = hasValue ? '' : 'not-allowed';
+                    contacto.style.backgroundColor = hasValue ? '' : '#f5f5f5';
                 };
-
-                // Initial check
                 checkMunicipality();
-
-                // Update when municipalidad changes
                 muni.addEventListener('change', checkMunicipality);
 
-                // Show warning when trying to interact with disabled select
-                contacto.addEventListener('click', (e) => {
-                    console.log(`${prefix} - contacto click:`, {
-                        muniValue: muni.value
-                    });
+                const showMuniWarning = (e) => {
                     if (!muni.value || muni.value === '') {
                         e.preventDefault();
                         e.stopPropagation();
                         showWarning('Primero debe seleccionar una municipalidad', muni);
                         return false;
                     }
-                });
-
-                contacto.addEventListener('mousedown', (e) => {
-                    console.log(`${prefix} - contacto mousedown:`, {
-                        muniValue: muni.value
-                    });
-                    if (!muni.value || muni.value === '') {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        showWarning('Primero debe seleccionar una municipalidad', muni);
-                        return false;
-                    }
-                });
-
+                    return true;
+                };
+                contacto.addEventListener('click', showMuniWarning);
+                contacto.addEventListener('mousedown', showMuniWarning);
                 contacto.addEventListener('focus', (e) => {
-                    console.log(`${prefix} - contacto focus:`, {
-                        muniValue: muni.value
-                    });
                     if (!muni.value || muni.value === '') {
                         showWarning('Primero debe seleccionar una municipalidad', muni);
                         contacto.blur();
                     }
                 });
             }
-            // mini search for municipalidades
+
             const muniSearch = document.getElementById(prefix + '-muni-search');
             if (muniSearch && muni) {
                 muniSearch.addEventListener('input', () => {
                     const q = muniSearch.value.trim().toLowerCase();
                     const filtered = q ? MUNICIPALIDADES_OPTIONS.filter(o => o.text.toLowerCase().includes(q)) : MUNICIPALIDADES_OPTIONS;
-                    // rebuild options
                     const prev = muni.value;
                     muni.innerHTML = '<option value="">Seleccione una municipalidad</option>' + filtered.map(o => `<option value="${o.id}">${o.text}</option>`).join('');
-                    // try keep previous selection if still visible
                     if (filtered.some(o => String(o.id) === String(prev))) {
                         muni.value = prev;
                     } else {
-                        // reset dependent contactos when muni disappears
                         const cont = document.getElementById(prefix + '-id_contacto');
                         if (cont) cont.innerHTML = '<option value="">Seleccione un contacto</option>';
                     }
                 });
             }
-            // mini search for contactos (server-side via q)
+
             const contactoSearch = document.getElementById(prefix + '-contacto-search');
             if (contactoSearch && muni && contacto) {
                 let t;
@@ -892,7 +846,7 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
             }
         });
 
-        // Open new-contact modal
+        // New contact button setup
         const newBtns = [{
                 btn: document.getElementById('btnAddContacto'),
                 prefix: 'add'
@@ -902,9 +856,6 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
                 prefix: 'edit'
             }
         ];
-
-        console.log('Configurando botones + Nuevo:', newBtns);
-
         const addContactoModalEl = document.getElementById('addContactoModal');
         const addEventoModalEl = document.getElementById('addEventoModal');
         const editEventoModalEl = document.getElementById('editEventoModal');
@@ -913,50 +864,20 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
             btn,
             prefix
         }) => {
-            if (!btn) {
-                console.log(`Botón ${prefix} no encontrado`);
-                return;
-            }
-
+            if (!btn) return;
             const muni = document.getElementById(prefix + '-id_municipalidad');
+            if (!muni) return;
 
-            if (!muni) {
-                console.log(`Municipalidad ${prefix} no encontrada`);
-                return;
-            }
-
-            // Function to update button state
             const updateButtonState = () => {
                 const hasValue = muni.value && muni.value !== '';
-                console.log(`${prefix} - updateButtonState:`, {
-                    value: muni.value,
-                    hasValue
-                });
-
-                if (!hasValue) {
-                    btn.disabled = true;
-                    btn.style.cursor = 'not-allowed';
-                    btn.style.opacity = '0.6';
-                } else {
-                    btn.disabled = false;
-                    btn.style.cursor = 'pointer';
-                    btn.style.opacity = '1';
-                }
+                btn.disabled = !hasValue;
+                btn.style.cursor = hasValue ? 'pointer' : 'not-allowed';
+                btn.style.opacity = hasValue ? '1' : '0.6';
             };
-
-            // Initial state
             updateButtonState();
-
-            // Update when municipalidad changes
             muni.addEventListener('change', updateButtonState);
 
-            // Handle click
             btn.addEventListener('click', (e) => {
-                console.log(`${prefix} - botón click:`, {
-                    muniValue: muni.value,
-                    disabled: btn.disabled
-                });
-
                 if (!muni.value || muni.value === '') {
                     e.preventDefault();
                     e.stopPropagation();
@@ -964,25 +885,17 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
                     return false;
                 }
 
-                // Store which modal is the parent
                 const parentModalEl = prefix === 'add' ? addEventoModalEl : editEventoModalEl;
-
                 const modal = new bootstrap.Modal(addContactoModalEl);
                 document.getElementById('addContactoForm').dataset.targetPrefix = prefix;
 
-                // Add dimmed class to parent modal when nested modal opens
                 addContactoModalEl.addEventListener('shown.bs.modal', function onShown() {
-                    if (parentModalEl) {
-                        parentModalEl.classList.add('modal-dimmed');
-                    }
+                    if (parentModalEl) parentModalEl.classList.add('modal-dimmed');
                     addContactoModalEl.removeEventListener('shown.bs.modal', onShown);
                 });
 
-                // Remove dimmed class when nested modal closes
                 addContactoModalEl.addEventListener('hidden.bs.modal', function onHidden() {
-                    if (parentModalEl) {
-                        parentModalEl.classList.remove('modal-dimmed');
-                    }
+                    if (parentModalEl) parentModalEl.classList.remove('modal-dimmed');
                     addContactoModalEl.removeEventListener('hidden.bs.modal', onHidden);
                 });
 
@@ -990,35 +903,18 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
             });
         });
 
-        // Save new contacto via AJAX
+        // Save new contact AJAX
         const saveBtn = document.getElementById('btnSaveContacto');
         if (saveBtn) {
             saveBtn.addEventListener('click', async () => {
                 const form = document.getElementById('addContactoForm');
                 const prefix = form.dataset.targetPrefix || 'add';
                 const muni = document.getElementById(prefix + '-id_municipalidad');
-
-                // Get form values
                 const nombreCompleto = form.querySelector('[name="nombre_completo"]').value.trim();
                 const cargo = form.querySelector('[name="cargo"]').value.trim();
-                const telefono = form.querySelector('[name="telefono"]').value.trim();
-                const email = form.querySelector('[name="email"]').value.trim();
 
-                // Validate required fields
-                if (!nombreCompleto) {
-                    showWarning('El nombre completo es requerido');
-                    form.querySelector('[name="nombre_completo"]').focus();
-                    return;
-                }
-
-                if (!cargo) {
-                    showWarning('El cargo es requerido');
-                    form.querySelector('[name="cargo"]').focus();
-                    return;
-                }
-
-                if (!muni.value) {
-                    showWarning('No se pudo obtener la municipalidad seleccionada');
+                if (!nombreCompleto || !cargo || !muni.value) {
+                    showWarning(!muni.value ? 'No se pudo obtener la municipalidad seleccionada' : 'El nombre y cargo son requeridos');
                     return;
                 }
 
@@ -1026,16 +922,12 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
                     id_municipalidad: parseInt(muni.value, 10),
                     nombre_completo: nombreCompleto,
                     cargo: cargo,
-                    telefono: telefono,
-                    email: email,
+                    telefono: form.querySelector('[name="telefono"]').value.trim(),
+                    email: form.querySelector('[name="email"]').value.trim(),
                 };
 
-                console.log('Enviando payload:', payload);
-
-                // Get CSRF token from the form
                 const csrfToken = document.querySelector('input[name="_csrfToken"]')?.value || '';
                 if (!csrfToken) {
-                    console.error('CSRF token not found');
                     showWarning('No se pudo verificar la solicitud. Por favor, recargue la página.');
                     return;
                 }
@@ -1046,55 +938,33 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
                         headers: {
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',
-                            ...(csrfToken ? {
-                                'X-CSRF-Token': csrfToken
-                            } : {})
+                            'X-CSRF-Token': csrfToken
                         },
                         body: JSON.stringify(payload),
                     });
 
-                    // Check if response is JSON before parsing
                     const contentType = res.headers.get('content-type');
                     if (!contentType || !contentType.includes('application/json')) {
-                        const text = await res.text();
-                        console.error('Respuesta no JSON del servidor:', text);
-                        throw new Error('El servidor retornó una respuesta inválida. Revise los logs del servidor.');
+                        throw new Error('El servidor retornó una respuesta inválida.');
                     }
 
                     const payloadRes = await res.json();
-                    console.log('Respuesta del servidor:', payloadRes);
-
                     if (!res.ok || !payloadRes?.success) {
-                        let errorMsg = 'No se pudo crear el contacto';
-                        if (payloadRes?.message) {
-                            errorMsg = payloadRes.message;
-                        }
+                        let errorMsg = payloadRes?.message || 'No se pudo crear el contacto';
                         if (payloadRes?.errors) {
-                            console.error('Errores de validación:', payloadRes.errors);
-                            // Show first error
                             const firstError = Object.values(payloadRes.errors).flat()[0];
-                            if (firstError) {
-                                errorMsg += ': ' + firstError;
-                            }
+                            if (firstError) errorMsg += ': ' + firstError;
                         }
                         throw new Error(errorMsg);
                     }
 
                     const newContact = payloadRes.data;
-                    // refresh contactos and select the new one
                     const contactoSelect = document.getElementById(prefix + '-id_contacto');
                     const list = await fetchContactos(muni.value);
                     populateSelect(contactoSelect, list, newContact.id);
-
-                    // Clear form
-                    form.querySelector('[name="nombre_completo"]').value = '';
-                    form.querySelector('[name="cargo"]').value = '';
-                    form.querySelector('[name="telefono"]').value = '';
-                    form.querySelector('[name="email"]').value = '';
-
-                    bootstrap.Modal.getInstance(document.getElementById('addContactoModal')).hide();
+                    form.reset();
+                    bootstrap.Modal.getInstance(addContactoModalEl).hide();
                 } catch (e) {
-                    console.error('Error al crear contacto:', e);
                     showWarning(e.message || 'No se pudo crear el contacto');
                 }
             });
