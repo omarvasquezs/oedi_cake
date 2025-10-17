@@ -90,16 +90,6 @@ class EventosTable extends Table
             ->scalar('descripcion')
             ->allowEmptyString('descripcion');
 
-        $validator
-            ->integer('creado_por')
-            ->requirePresence('creado_por', 'create')
-            ->notEmptyString('creado_por');
-
-        $validator
-            ->integer('actualizado_por')
-            ->requirePresence('actualizado_por', 'create')
-            ->notEmptyString('actualizado_por');
-
         return $validator;
     }
 
