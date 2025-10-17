@@ -285,7 +285,7 @@ $this->assign('title', $title ?? 'Primeros Acercamientos');
                     <?php foreach ($eventos as $ev) : ?>
                         <tr style="border-bottom:1px solid #f0f0f0;">
                             <td style="padding:1rem;font-size:14px;color:#2c3e50;">
-                                <?= h($ev->municipalidad->nombre ?? '') ?>
+                                <?= h($ev->municipalidade->nombre ?? '') ?>
                             </td>
                             <td style="padding:1rem;font-size:14px;color:#2c3e50;"><?= h($ev->tipo_acercamiento) ?></td>
                             <td style="padding:1rem;font-size:14px;color:#2c3e50;"><?= h($ev->lugar) ?></td>
