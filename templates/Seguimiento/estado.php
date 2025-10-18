@@ -92,6 +92,10 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
         background: #f8f9fa;
     }
 
+    .icon-view {
+        color: #34A853;
+    }
+
     .icon-edit {
         color: #4285F4;
     }
@@ -323,6 +327,7 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
                             </td>
                             <td style="padding:1rem;vertical-align:middle;">
                                 <div style="display:flex;align-items:center;gap:0.75rem;">
+                                    <button type="button" class="action-icon" title="Ver" onclick='openViewModal(<?= json_encode($es) ?>)'><i class="fa-solid fa-eye icon-view"></i></button>
                                     <button type="button" class="action-icon" title="Editar" onclick='openEditModal(<?= json_encode($es) ?>)'><i class="fa-solid fa-pen-to-square icon-edit"></i></button>
                                     <?= $this->Form->postLink('<i class="fa-solid fa-trash icon-delete"></i>', ['action' => 'deleteEstado', $es->id_estado], ['confirm' => "¿Está seguro de eliminar este estado de seguimiento?", 'class' => 'action-icon', 'escape' => false, 'title' => 'Eliminar']) ?>
                                 </div>
@@ -608,6 +613,71 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
                 <?= $this->Form->button(__('Guardar Cambios'), ['class' => 'btn btn-primary']) ?>
             </div>
             <?= $this->Form->end() ?>
+        </div>
+    </div>
+</div>
+
+<!-- View Modal -->
+<div class="modal fade" id="viewEstadoModal" tabindex="-1" aria-labelledby="viewEstadoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewEstadoLabel">Detalle del Estado de Seguimiento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-5">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="fw-bold text-secondary mb-2" style="font-size: 14px;">EVENTO</label>
+                        <div id="view-evento" style="padding: 12px; background: #f8f9fa; border-radius: 6px; font-size: 15px;"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold text-secondary mb-2" style="font-size: 14px;">CONTACTO</label>
+                        <div id="view-contacto" style="padding: 12px; background: #f8f9fa; border-radius: 6px; font-size: 15px;"></div>
+                    </div>
+                </div>
+                <div class="row g-4 mt-1">
+                    <div class="col-md-6">
+                        <label class="fw-bold text-secondary mb-2" style="font-size: 14px;">TIPO DE REUNIÓN</label>
+                        <div id="view-tipo-reunion" style="padding: 12px; background: #f8f9fa; border-radius: 6px; font-size: 15px;"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold text-secondary mb-2" style="font-size: 14px;">FECHA</label>
+                        <div id="view-fecha" style="padding: 12px; background: #f8f9fa; border-radius: 6px; font-size: 15px;"></div>
+                    </div>
+                </div>
+                <div class="row g-4 mt-1">
+                    <div class="col-md-12">
+                        <label class="fw-bold text-secondary mb-2" style="font-size: 14px;">ESTADO</label>
+                        <div id="view-estado-ref" style="padding: 12px; background: #f8f9fa; border-radius: 6px; font-size: 15px;"></div>
+                    </div>
+                </div>
+                <div class="row g-4 mt-1">
+                    <div class="col-12">
+                        <label class="fw-bold text-secondary mb-2" style="font-size: 14px;">DESCRIPCIÓN</label>
+                        <div id="view-descripcion" style="padding: 12px; background: #f8f9fa; border-radius: 6px; font-size: 15px; min-height: 80px; white-space: pre-wrap;"></div>
+                    </div>
+                </div>
+                <div class="row g-4 mt-1">
+                    <div class="col-md-6">
+                        <label class="fw-bold text-secondary mb-2" style="font-size: 14px;">FECHA DE COMPROMISO</label>
+                        <div id="view-fecha-compromiso" style="padding: 12px; background: #f8f9fa; border-radius: 6px; font-size: 15px;"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold text-secondary mb-2" style="font-size: 14px;">ESTADO DEL COMPROMISO</label>
+                        <div id="view-compromiso-estado" style="padding: 12px; background: #f8f9fa; border-radius: 6px; font-size: 15px;"></div>
+                    </div>
+                </div>
+                <div class="row g-4 mt-1">
+                    <div class="col-12">
+                        <label class="fw-bold text-secondary mb-2" style="font-size: 14px;">COMPROMISO</label>
+                        <div id="view-compromiso" style="padding: 12px; background: #f8f9fa; border-radius: 6px; font-size: 15px; min-height: 80px; white-space: pre-wrap;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
         </div>
     </div>
 </div>
@@ -1121,6 +1191,81 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
         } catch (e) {
             console.error(e);
         }
+    }
+
+    // View modal opener
+    function openViewModal(estadoSeguimiento) {
+        // Evento
+        const eventoText = estadoSeguimiento.evento?.tipo_acercamiento || 'N/A';
+        const eventoFecha = estadoSeguimiento.evento?.fecha ? formatDate(estadoSeguimiento.evento.fecha) : '';
+        document.getElementById('view-evento').innerHTML = `${eventoText}${eventoFecha ? `<br><small class="text-muted">Fecha: ${eventoFecha}</small>` : ''}`;
+
+        // Contacto
+        document.getElementById('view-contacto').textContent = estadoSeguimiento.contacto?.nombre_completo || 'N/A';
+
+        // Tipo de Reunión
+        document.getElementById('view-tipo-reunion').textContent = estadoSeguimiento.tipos_reunion?.descripcion || 'N/A';
+
+        // Fecha
+        let fechaText = 'N/A';
+        if (estadoSeguimiento.fecha) {
+            fechaText = formatDate(estadoSeguimiento.fecha);
+        }
+        document.getElementById('view-fecha').textContent = fechaText;
+
+        // Estado
+        document.getElementById('view-estado-ref').textContent = estadoSeguimiento.estado?.descripcion || 'N/A';
+
+        // Descripción
+        document.getElementById('view-descripcion').textContent = estadoSeguimiento.descripcion || 'Sin descripción';
+
+        // Fecha Compromiso
+        let fechaCompromisoText = 'Sin fecha de compromiso';
+        if (estadoSeguimiento.fecha_compromiso) {
+            fechaCompromisoText = formatDate(estadoSeguimiento.fecha_compromiso);
+        }
+        document.getElementById('view-fecha-compromiso').textContent = fechaCompromisoText;
+
+        // Estado del Compromiso
+        const compromisoEstadoHtml = estadoSeguimiento.compromiso_concluido ?
+            '<span style="color: #27ae60;"><i class="fa-solid fa-check-circle"></i> Concluido</span>' :
+            '<span style="color: #e67e22;"><i class="fa-solid fa-clock"></i> Pendiente</span>';
+        document.getElementById('view-compromiso-estado').innerHTML = compromisoEstadoHtml;
+
+        // Compromiso
+        document.getElementById('view-compromiso').textContent = estadoSeguimiento.compromiso || 'Sin compromiso';
+
+        // Mostrar modal
+        try {
+            new bootstrap.Modal(document.getElementById('viewEstadoModal')).show();
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    // Helper function to format dates
+    function formatDate(dateValue) {
+        if (!dateValue) return 'N/A';
+
+        let dateStr = '';
+        if (typeof dateValue === 'string') {
+            dateStr = dateValue;
+        } else if (dateValue.date) {
+            dateStr = dateValue.date;
+        }
+
+        if (!dateStr) return 'N/A';
+
+        // Parse and format as DD/MM/YYYY
+        const parts = dateStr.split(/[-\s]/);
+        if (parts.length >= 3) {
+            const year = parts[0];
+            const month = parts[1];
+            const day = parts[2];
+            return `${day}/${month}/${year}`;
+        }
+
+        return dateStr;
     }
 
     // Change per page
