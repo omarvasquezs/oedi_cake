@@ -42,11 +42,12 @@ class SeguimientoController extends AppController
             $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $search) . '%';
             $query->where([
                 'OR' => [
-                    'Eventos.id_evento LIKE' => $like,
                     'Estados.descripcion LIKE' => $like,
                     'Contactos.nombre_completo LIKE' => $like,
                     'EstadosSeguimiento.descripcion LIKE' => $like,
                     'EstadosSeguimiento.compromiso LIKE' => $like,
+                    'Municipalidades.nombre LIKE' => $like,
+                    'Municipalidades.departamento LIKE' => $like,
                 ],
             ]);
         }
