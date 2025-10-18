@@ -111,6 +111,124 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
     #editEstadoModal textarea {
         min-height: 120px;
     }
+
+    /* Custom Select Styles */
+    .custom-select-wrapper {
+        position: relative;
+    }
+
+    .custom-select-wrapper select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-color: white;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 1.25rem;
+        padding-right: 2.5rem;
+    }
+
+    /* Select2 Custom Styles */
+    .select2-container--default .select2-selection--single {
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        height: calc(3.5rem + 2px);
+        padding: 0.875rem 0.75rem;
+        font-size: 16px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 1.75rem;
+        color: #495057;
+        padding-left: 0;
+        padding-right: 20px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: calc(3.5rem);
+        right: 8px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow b {
+        border-color: #6c757d transparent transparent transparent;
+        border-width: 6px 5px 0 5px;
+    }
+
+    .select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+        border-color: transparent transparent #6c757d transparent;
+        border-width: 0 5px 6px 5px;
+    }
+
+    .select2-container--default .select2-search--dropdown .select2-search__field {
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        padding: 0.625rem 0.75rem;
+        font-size: 16px;
+        outline: none;
+    }
+
+    .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    .select2-dropdown {
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .select2-container--default .select2-results__option {
+        padding: 0.625rem 0.75rem;
+        font-size: 16px;
+    }
+
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: #3498db;
+        color: white;
+    }
+
+    .select2-container--default .select2-results__option[aria-selected=true] {
+        background-color: #e9ecef;
+        color: #495057;
+    }
+
+    .select2-container {
+        width: 100% !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__placeholder {
+        color: #6c757d;
+    }
+
+    .select2-results__message {
+        padding: 0.625rem 0.75rem;
+        color: #6c757d;
+        font-size: 16px;
+    }
+
+    /* Custom evento option styles */
+    .select2-evento-option {
+        padding: 0.25rem 0;
+    }
+
+    .select2-evento-option .evento-name {
+        font-size: 16px;
+        font-weight: 500;
+        color: #212529;
+        margin-bottom: 0.25rem;
+    }
+
+    .select2-evento-option .evento-fecha {
+        font-size: 14px;
+        color: #6c757d;
+        font-weight: 400;
+    }
+
+    .select2-container--default .select2-results__option {
+        padding: 0.5rem 0.75rem;
+    }
 </style>
 
 <div class="estados-seguimiento-index">
@@ -261,46 +379,106 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
 
 <!-- Add Modal -->
 <div class="modal fade" id="addEstadoModal" tabindex="-1" aria-labelledby="addEstadoLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <?= $this->Form->create(null, ['url' => ['controller' => 'Seguimiento', 'action' => 'addEstado']]) ?>
             <div class="modal-header">
                 <h5 class="modal-title" id="addEstadoLabel">Nuevo Estado de Seguimiento</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="row">
+            <div class="modal-body p-5">
+                <div class="row g-3">
                     <div class="col-md-6">
-                        <?= $this->Form->control('id_evento', ['type' => 'select', 'options' => [], 'empty' => 'Seleccione un evento', 'class' => 'form-control', 'label' => 'Evento']) ?>
+                        <?= $this->Form->control('id_evento', [
+                            'type' => 'select',
+                            'options' => [],
+                            'empty' => 'Seleccione un evento',
+                            'class' => 'form-select',
+                            'label' => 'Evento',
+                            'required' => true,
+                        ]) ?>
                     </div>
                     <div class="col-md-6">
-                        <?= $this->Form->control('id_contacto', ['type' => 'select', 'options' => [], 'empty' => 'Seleccione un contacto', 'class' => 'form-control', 'label' => 'Contacto']) ?>
+                        <label class="form-label">Contacto <span class="text-danger">*</span></label>
+                        <div class="d-flex gap-2">
+                            <?= $this->Form->select('id_contacto', [], [
+                                'empty' => 'Seleccione un contacto',
+                                'class' => 'form-select',
+                                'id' => 'add-id_contacto',
+                                'required' => true,
+                            ]) ?>
+                            <button type="button" id="btnAddContacto" class="btn btn-success" style="white-space:nowrap; flex-shrink: 0;">+ Nuevo Contacto</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <?= $this->Form->control('id_tipo_reunion', [
+                            'type' => 'select',
+                            'options' => [],
+                            'empty' => 'Seleccione un tipo de reunión',
+                            'class' => 'form-select',
+                            'label' => 'Tipo de Reunión',
+                        ]) ?>
                     </div>
                     <div class="col-md-6">
-                        <?= $this->Form->control('id_tipo_reunion', ['type' => 'select', 'options' => [], 'empty' => 'Seleccione tipo de reunión', 'class' => 'form-control', 'label' => 'Tipo de Reunión']) ?>
+                        <?= $this->Form->control('fecha', [
+                            'type' => 'date',
+                            'class' => 'form-control',
+                            'label' => 'Fecha',
+                        ]) ?>
                     </div>
-                    <div class="col-md-6">
-                        <?= $this->Form->control('fecha', ['type' => 'date', 'class' => 'form-control', 'label' => 'Fecha']) ?>
-                    </div>
-                    <div class="col-md-6">
-                        <?= $this->Form->control('id_estado_ref', ['type' => 'select', 'options' => [], 'empty' => 'Seleccione un estado', 'class' => 'form-control', 'label' => 'Estado']) ?>
-                    </div>
-                    <div class="col-md-6">
-                        <?= $this->Form->control('fecha_compromiso', ['type' => 'date', 'class' => 'form-control', 'label' => 'Fecha Compromiso', 'required' => false]) ?>
-                    </div>
+                </div>
+                <div class="row g-3 mt-1">
                     <div class="col-md-12">
-                        <?= $this->Form->control('descripcion', ['type' => 'textarea', 'class' => 'form-control', 'label' => 'Descripción', 'placeholder' => 'Ingrese la descripción', 'required' => false]) ?>
+                        <?= $this->Form->control('id_estado_ref', [
+                            'type' => 'select',
+                            'options' => [],
+                            'empty' => 'Seleccione un estado',
+                            'class' => 'form-select',
+                            'label' => 'Estado (Referencia)',
+                        ]) ?>
                     </div>
-                    <div class="col-md-12">
-                        <?= $this->Form->control('compromiso', ['type' => 'textarea', 'class' => 'form-control', 'label' => 'Compromiso', 'placeholder' => 'Ingrese el compromiso', 'required' => false]) ?>
+                </div>
+                <div class="row g-3 mt-1">
+                    <div class="col-12">
+                        <?= $this->Form->control('descripcion', [
+                            'type' => 'textarea',
+                            'class' => 'form-control',
+                            'label' => 'Descripción',
+                            'rows' => 3,
+                        ]) ?>
                     </div>
-                    <div class="col-md-12">
-                        <div class="form-check">
-                            <?= $this->Form->checkbox('compromiso_concluido', ['class' => 'form-check-input', 'id' => 'compromisoConcluidoAdd']) ?>
+                </div>
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <?= $this->Form->control('fecha_compromiso', [
+                            'type' => 'date',
+                            'class' => 'form-control',
+                            'label' => 'Fecha de Compromiso',
+                            'required' => false,
+                        ]) ?>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <div class="form-check mb-3">
+                            <?= $this->Form->checkbox('compromiso_concluido', [
+                                'class' => 'form-check-input',
+                                'id' => 'compromisoConcluidoAdd',
+                            ]) ?>
                             <label class="form-check-label" for="compromisoConcluidoAdd">
                                 Compromiso Concluido
                             </label>
                         </div>
+                    </div>
+                </div>
+                <div class="row g-3 mt-1">
+                    <div class="col-12">
+                        <?= $this->Form->control('compromiso', [
+                            'type' => 'textarea',
+                            'class' => 'form-control',
+                            'label' => 'Compromiso',
+                            'rows' => 3,
+                        ]) ?>
                     </div>
                 </div>
             </div>
@@ -315,47 +493,113 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
 
 <!-- Edit Modal -->
 <div class="modal fade" id="editEstadoModal" tabindex="-1" aria-labelledby="editEstadoLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <?= $this->Form->create(null, ['id' => 'editEstadoForm', 'url' => ['controller' => 'Seguimiento', 'action' => 'editEstado']]) ?>
             <div class="modal-header">
                 <h5 class="modal-title" id="editEstadoLabel">Editar Estado de Seguimiento</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-5">
                 <?= $this->Form->hidden('id_estado', ['id' => 'edit-id']) ?>
-                <div class="row">
+                <div class="row g-3">
                     <div class="col-md-6">
-                        <?= $this->Form->control('id_evento', ['type' => 'select', 'options' => [], 'empty' => 'Seleccione un evento', 'id' => 'edit-evento', 'class' => 'form-control', 'label' => 'Evento']) ?>
+                        <?= $this->Form->control('id_evento', [
+                            'type' => 'select',
+                            'options' => [],
+                            'empty' => 'Seleccione un evento',
+                            'id' => 'edit-evento',
+                            'class' => 'form-select',
+                            'label' => 'Evento',
+                            'required' => true,
+                        ]) ?>
                     </div>
                     <div class="col-md-6">
-                        <?= $this->Form->control('id_contacto', ['type' => 'select', 'options' => [], 'empty' => 'Seleccione un contacto', 'id' => 'edit-contacto', 'class' => 'form-control', 'label' => 'Contacto']) ?>
+                        <?= $this->Form->control('id_contacto', [
+                            'type' => 'select',
+                            'options' => [],
+                            'empty' => 'Seleccione un contacto',
+                            'id' => 'edit-contacto',
+                            'class' => 'form-select',
+                            'label' => 'Contacto',
+                            'required' => true,
+                        ]) ?>
+                    </div>
+                </div>
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <?= $this->Form->control('id_tipo_reunion', [
+                            'type' => 'select',
+                            'options' => [],
+                            'empty' => 'Seleccione un tipo de reunión',
+                            'id' => 'edit-tipo-reunion',
+                            'class' => 'form-select',
+                            'label' => 'Tipo de Reunión',
+                        ]) ?>
                     </div>
                     <div class="col-md-6">
-                        <?= $this->Form->control('id_tipo_reunion', ['type' => 'select', 'options' => [], 'empty' => 'Seleccione tipo de reunión', 'id' => 'edit-tipo-reunion', 'class' => 'form-control', 'label' => 'Tipo de Reunión']) ?>
+                        <?= $this->Form->control('fecha', [
+                            'type' => 'date',
+                            'id' => 'edit-fecha',
+                            'class' => 'form-control',
+                            'label' => 'Fecha',
+                        ]) ?>
                     </div>
-                    <div class="col-md-6">
-                        <?= $this->Form->control('fecha', ['type' => 'date', 'id' => 'edit-fecha', 'class' => 'form-control', 'label' => 'Fecha']) ?>
-                    </div>
-                    <div class="col-md-6">
-                        <?= $this->Form->control('id_estado_ref', ['type' => 'select', 'options' => [], 'empty' => 'Seleccione un estado', 'id' => 'edit-estado-ref', 'class' => 'form-control', 'label' => 'Estado']) ?>
-                    </div>
-                    <div class="col-md-6">
-                        <?= $this->Form->control('fecha_compromiso', ['type' => 'date', 'id' => 'edit-fecha-compromiso', 'class' => 'form-control', 'label' => 'Fecha Compromiso', 'required' => false]) ?>
-                    </div>
+                </div>
+                <div class="row g-3 mt-1">
                     <div class="col-md-12">
-                        <?= $this->Form->control('descripcion', ['type' => 'textarea', 'id' => 'edit-descripcion', 'class' => 'form-control', 'label' => 'Descripción', 'required' => false]) ?>
+                        <?= $this->Form->control('id_estado_ref', [
+                            'type' => 'select',
+                            'options' => [],
+                            'empty' => 'Seleccione un estado',
+                            'id' => 'edit-estado-ref',
+                            'class' => 'form-select',
+                            'label' => 'Estado (Referencia)',
+                        ]) ?>
                     </div>
-                    <div class="col-md-12">
-                        <?= $this->Form->control('compromiso', ['type' => 'textarea', 'id' => 'edit-compromiso', 'class' => 'form-control', 'label' => 'Compromiso', 'required' => false]) ?>
+                </div>
+                <div class="row g-3 mt-1">
+                    <div class="col-12">
+                        <?= $this->Form->control('descripcion', [
+                            'type' => 'textarea',
+                            'id' => 'edit-descripcion',
+                            'class' => 'form-control',
+                            'label' => 'Descripción',
+                            'rows' => 3,
+                        ]) ?>
                     </div>
-                    <div class="col-md-12">
-                        <div class="form-check">
-                            <?= $this->Form->checkbox('compromiso_concluido', ['class' => 'form-check-input', 'id' => 'edit-compromiso-concluido']) ?>
+                </div>
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <?= $this->Form->control('fecha_compromiso', [
+                            'type' => 'date',
+                            'id' => 'edit-fecha-compromiso',
+                            'class' => 'form-control',
+                            'label' => 'Fecha de Compromiso',
+                            'required' => false,
+                        ]) ?>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <div class="form-check mb-3">
+                            <?= $this->Form->checkbox('compromiso_concluido', [
+                                'class' => 'form-check-input',
+                                'id' => 'edit-compromiso-concluido',
+                            ]) ?>
                             <label class="form-check-label" for="edit-compromiso-concluido">
                                 Compromiso Concluido
                             </label>
                         </div>
+                    </div>
+                </div>
+                <div class="row g-3 mt-1">
+                    <div class="col-12">
+                        <?= $this->Form->control('compromiso', [
+                            'type' => 'textarea',
+                            'id' => 'edit-compromiso',
+                            'class' => 'form-control',
+                            'label' => 'Compromiso',
+                            'rows' => 3,
+                        ]) ?>
                     </div>
                 </div>
             </div>
@@ -369,8 +613,37 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
 </div>
 
 <?php $this->start('script'); ?>
+<!-- jQuery (required for Select2) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
     let dropdownData = null;
+
+    // Template function for displaying eventos with fecha
+    function formatEvento(evento) {
+        if (!evento.id) {
+            return evento.text;
+        }
+
+        var $evento = $(
+            '<div class="select2-evento-option">' +
+            '<div class="evento-name">' + evento.text + '</div>' +
+            '<div class="evento-fecha">Fecha: ' + evento.fecha + '</div>' +
+            '</div>'
+        );
+        return $evento;
+    }
+
+    function formatEventoSelection(evento) {
+        if (!evento.id) {
+            return evento.text;
+        }
+        return evento.text;
+    }
 
     // Load dropdown data on page load
     document.addEventListener('DOMContentLoaded', function() {
@@ -413,9 +686,26 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
         const addEstadoRef = document.querySelector('#addEstadoModal select[name="id_estado_ref"]');
 
         if (addEvento) {
-            addEvento.innerHTML = '<option value="">Seleccione un evento</option>';
-            Object.entries(dropdownData.eventos).forEach(([key, value]) => {
-                addEvento.innerHTML += `<option value="${key}">${value}</option>`;
+            // Clear and use data from API directly for eventos (which includes fecha)
+            $(addEvento).empty();
+            $(addEvento).select2({
+                dropdownParent: $('#addEstadoModal'),
+                placeholder: 'Seleccione un evento',
+                allowClear: true,
+                data: [{
+                    id: '',
+                    text: 'Seleccione un evento'
+                }].concat(dropdownData.eventos),
+                templateResult: formatEvento,
+                templateSelection: formatEventoSelection,
+                language: {
+                    noResults: function() {
+                        return "No se encontraron resultados";
+                    },
+                    searching: function() {
+                        return "Buscando...";
+                    }
+                }
             });
         }
 
@@ -424,6 +714,19 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
             Object.entries(dropdownData.contactos).forEach(([key, value]) => {
                 addContacto.innerHTML += `<option value="${key}">${value}</option>`;
             });
+            $(addContacto).select2({
+                dropdownParent: $('#addEstadoModal'),
+                placeholder: 'Seleccione un contacto',
+                allowClear: true,
+                language: {
+                    noResults: function() {
+                        return "No se encontraron resultados";
+                    },
+                    searching: function() {
+                        return "Buscando...";
+                    }
+                }
+            });
         }
 
         if (addTipoReunion) {
@@ -431,12 +734,38 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
             Object.entries(dropdownData.tiposReunion).forEach(([key, value]) => {
                 addTipoReunion.innerHTML += `<option value="${key}">${value}</option>`;
             });
+            $(addTipoReunion).select2({
+                dropdownParent: $('#addEstadoModal'),
+                placeholder: 'Seleccione tipo de reunión',
+                allowClear: true,
+                language: {
+                    noResults: function() {
+                        return "No se encontraron resultados";
+                    },
+                    searching: function() {
+                        return "Buscando...";
+                    }
+                }
+            });
         }
 
         if (addEstadoRef) {
             addEstadoRef.innerHTML = '<option value="">Seleccione un estado</option>';
             Object.entries(dropdownData.estados).forEach(([key, value]) => {
                 addEstadoRef.innerHTML += `<option value="${key}">${value}</option>`;
+            });
+            $(addEstadoRef).select2({
+                dropdownParent: $('#addEstadoModal'),
+                placeholder: 'Seleccione un estado',
+                allowClear: true,
+                language: {
+                    noResults: function() {
+                        return "No se encontraron resultados";
+                    },
+                    searching: function() {
+                        return "Buscando...";
+                    }
+                }
             });
         }
 
@@ -447,9 +776,25 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
         const editEstadoRef = document.getElementById('edit-estado-ref');
 
         if (editEvento) {
-            editEvento.innerHTML = '<option value="">Seleccione un evento</option>';
-            Object.entries(dropdownData.eventos).forEach(([key, value]) => {
-                editEvento.innerHTML += `<option value="${key}">${value}</option>`;
+            $(editEvento).empty();
+            $(editEvento).select2({
+                dropdownParent: $('#editEstadoModal'),
+                placeholder: 'Seleccione un evento',
+                allowClear: true,
+                data: [{
+                    id: '',
+                    text: 'Seleccione un evento'
+                }].concat(dropdownData.eventos),
+                templateResult: formatEvento,
+                templateSelection: formatEventoSelection,
+                language: {
+                    noResults: function() {
+                        return "No se encontraron resultados";
+                    },
+                    searching: function() {
+                        return "Buscando...";
+                    }
+                }
             });
         }
 
@@ -458,6 +803,19 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
             Object.entries(dropdownData.contactos).forEach(([key, value]) => {
                 editContacto.innerHTML += `<option value="${key}">${value}</option>`;
             });
+            $(editContacto).select2({
+                dropdownParent: $('#editEstadoModal'),
+                placeholder: 'Seleccione un contacto',
+                allowClear: true,
+                language: {
+                    noResults: function() {
+                        return "No se encontraron resultados";
+                    },
+                    searching: function() {
+                        return "Buscando...";
+                    }
+                }
+            });
         }
 
         if (editTipoReunion) {
@@ -465,12 +823,38 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
             Object.entries(dropdownData.tiposReunion).forEach(([key, value]) => {
                 editTipoReunion.innerHTML += `<option value="${key}">${value}</option>`;
             });
+            $(editTipoReunion).select2({
+                dropdownParent: $('#editEstadoModal'),
+                placeholder: 'Seleccione tipo de reunión',
+                allowClear: true,
+                language: {
+                    noResults: function() {
+                        return "No se encontraron resultados";
+                    },
+                    searching: function() {
+                        return "Buscando...";
+                    }
+                }
+            });
         }
 
         if (editEstadoRef) {
             editEstadoRef.innerHTML = '<option value="">Seleccione un estado</option>';
             Object.entries(dropdownData.estados).forEach(([key, value]) => {
                 editEstadoRef.innerHTML += `<option value="${key}">${value}</option>`;
+            });
+            $(editEstadoRef).select2({
+                dropdownParent: $('#editEstadoModal'),
+                placeholder: 'Seleccione un estado',
+                allowClear: true,
+                language: {
+                    noResults: function() {
+                        return "No se encontraron resultados";
+                    },
+                    searching: function() {
+                        return "Buscando...";
+                    }
+                }
             });
         }
     }

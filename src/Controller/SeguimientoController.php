@@ -207,12 +207,20 @@ class SeguimientoController extends AppController
         /** @var \App\Model\Table\EstadosTable $Estados */
         $Estados = $this->fetchTable('Estados');
 
-        $eventos = $Eventos->find('list', [
-            'keyField' => 'id_evento',
-            'valueField' => function ($evento) {
-                return $evento->tipo_acercamiento . ' - ' . $evento->fecha->format('Y-m-d');
-            },
-        ])->contain(['Municipalidades'])->toArray();
+        // Eventos con información adicional para Select2
+        $eventosData = $Eventos->find()
+            ->contain(['Municipalidades'])
+            ->orderBy(['Eventos.fecha' => 'DESC'])
+            ->all();
+
+        $eventos = [];
+        foreach ($eventosData as $evento) {
+            $eventos[] = [
+                'id' => $evento->id_evento,
+                'text' => $evento->tipo_acercamiento,
+                'fecha' => $evento->fecha->format('d/m/Y'),
+            ];
+        }
 
         $contactos = $Contactos->find('list', [
             'keyField' => 'id_contacto',
