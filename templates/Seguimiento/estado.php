@@ -710,13 +710,10 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
         }
 
         if (addContacto) {
-            addContacto.innerHTML = '<option value="">Seleccione un contacto</option>';
-            Object.entries(dropdownData.contactos).forEach(([key, value]) => {
-                addContacto.innerHTML += `<option value="${key}">${value}</option>`;
-            });
+            addContacto.innerHTML = '<option value="">Primero seleccione un evento</option>';
             $(addContacto).select2({
                 dropdownParent: $('#addEstadoModal'),
-                placeholder: 'Seleccione un contacto',
+                placeholder: 'Primero seleccione un evento',
                 allowClear: true,
                 language: {
                     noResults: function() {
@@ -725,6 +722,86 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
                     searching: function() {
                         return "Buscando...";
                     }
+                }
+            });
+            // Deshabilitar inicialmente
+            $(addContacto).prop('disabled', true);
+        }
+
+        // Deshabilitar el botón "Nuevo Contacto" inicialmente
+        const btnAddContacto = document.getElementById('btnAddContacto');
+        if (btnAddContacto) {
+            btnAddContacto.disabled = true;
+        }
+
+        // Evento cuando se selecciona un evento en el modal Add
+        if (addEvento) {
+            $(addEvento).on('select2:select', async function(e) {
+                const idEvento = e.params.data.id;
+
+                if (!idEvento) {
+                    // Si no hay evento, deshabilitar contacto y botón
+                    if (addContacto) {
+                        $(addContacto).prop('disabled', true);
+                        $(addContacto).empty().append('<option value="">Primero seleccione un evento</option>');
+                    }
+                    if (btnAddContacto) {
+                        btnAddContacto.disabled = true;
+                    }
+                    return;
+                }
+
+                // Cargar contactos del evento seleccionado
+                try {
+                    const url = new URL('<?= $this->Url->build(['controller' => 'Seguimiento', 'action' => 'contactsByEvento']) ?>', window.location.origin);
+                    url.searchParams.set('id_evento', idEvento);
+
+                    const response = await fetch(url.toString(), {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Error al cargar contactos');
+                    }
+
+                    const result = await response.json();
+
+                    if (result.success && result.data) {
+                        // Limpiar y repoblar el select de contactos
+                        $(addContacto).empty().append('<option value="">Seleccione un contacto</option>');
+                        result.data.forEach(contacto => {
+                            $(addContacto).append(new Option(contacto.text, contacto.id, false, false));
+                        });
+
+                        // Habilitar el select de contactos y el botón
+                        $(addContacto).prop('disabled', false);
+                        if (btnAddContacto) {
+                            btnAddContacto.disabled = false;
+                        }
+                    } else {
+                        // Si no hay contactos, mostrar mensaje
+                        $(addContacto).empty().append('<option value="">No hay contactos disponibles</option>');
+                        $(addContacto).prop('disabled', false);
+                        if (btnAddContacto) {
+                            btnAddContacto.disabled = false;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error cargando contactos:', error);
+                    $(addContacto).empty().append('<option value="">Error al cargar contactos</option>');
+                }
+            });
+
+            // Evento cuando se limpia la selección
+            $(addEvento).on('select2:clear', function() {
+                if (addContacto) {
+                    $(addContacto).prop('disabled', true);
+                    $(addContacto).empty().append('<option value="">Primero seleccione un evento</option>');
+                }
+                if (btnAddContacto) {
+                    btnAddContacto.disabled = true;
                 }
             });
         }
@@ -800,9 +877,6 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
 
         if (editContacto) {
             editContacto.innerHTML = '<option value="">Seleccione un contacto</option>';
-            Object.entries(dropdownData.contactos).forEach(([key, value]) => {
-                editContacto.innerHTML += `<option value="${key}">${value}</option>`;
-            });
             $(editContacto).select2({
                 dropdownParent: $('#editEstadoModal'),
                 placeholder: 'Seleccione un contacto',
@@ -814,6 +888,55 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
                     searching: function() {
                         return "Buscando...";
                     }
+                }
+            });
+        }
+
+        // Evento cuando se selecciona un evento en el modal Edit
+        if (editEvento) {
+            $(editEvento).on('select2:select', async function(e) {
+                const idEvento = e.params.data.id;
+
+                if (!idEvento) {
+                    if (editContacto) {
+                        $(editContacto).empty().append('<option value="">Primero seleccione un evento</option>');
+                    }
+                    return;
+                }
+
+                // Cargar contactos del evento seleccionado
+                try {
+                    const url = new URL('<?= $this->Url->build(['controller' => 'Seguimiento', 'action' => 'contactsByEvento']) ?>', window.location.origin);
+                    url.searchParams.set('id_evento', idEvento);
+
+                    const response = await fetch(url.toString(), {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Error al cargar contactos');
+                    }
+
+                    const result = await response.json();
+
+                    if (result.success && result.data) {
+                        const currentValue = $(editContacto).val();
+                        $(editContacto).empty().append('<option value="">Seleccione un contacto</option>');
+                        result.data.forEach(contacto => {
+                            $(editContacto).append(new Option(contacto.text, contacto.id, false, false));
+                        });
+                        // Mantener el valor seleccionado si existe en la lista
+                        if (currentValue && result.data.some(c => c.id == currentValue)) {
+                            $(editContacto).val(currentValue).trigger('change');
+                        }
+                    } else {
+                        $(editContacto).empty().append('<option value="">No hay contactos disponibles</option>');
+                    }
+                } catch (error) {
+                    console.error('Error cargando contactos:', error);
+                    $(editContacto).empty().append('<option value="">Error al cargar contactos</option>');
                 }
             });
         }
@@ -926,16 +1049,70 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
     });
 
     // Edit modal opener
-    function openEditModal(estadoSeguimiento) {
+    async function openEditModal(estadoSeguimiento) {
         const form = document.getElementById('editEstadoForm');
         form.setAttribute('action', "<?= $this->Url->build(['controller' => 'Seguimiento', 'action' => 'editEstado']) ?>/" + estadoSeguimiento.id_estado);
         document.getElementById('edit-id').value = estadoSeguimiento.id_estado;
-        document.getElementById('edit-evento').value = estadoSeguimiento.id_evento || '';
-        document.getElementById('edit-contacto').value = estadoSeguimiento.id_contacto || '';
+
+        // Establecer el evento primero
+        $('#edit-evento').val(estadoSeguimiento.id_evento || '').trigger('change');
+
+        // Cargar contactos del evento si existe
+        if (estadoSeguimiento.id_evento) {
+            try {
+                const url = new URL('<?= $this->Url->build(['controller' => 'Seguimiento', 'action' => 'contactsByEvento']) ?>', window.location.origin);
+                url.searchParams.set('id_evento', estadoSeguimiento.id_evento);
+
+                const response = await fetch(url.toString(), {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+
+                    if (result.success && result.data) {
+                        const editContacto = document.getElementById('edit-contacto');
+                        $(editContacto).empty().append('<option value="">Seleccione un contacto</option>');
+                        result.data.forEach(contacto => {
+                            $(editContacto).append(new Option(contacto.text, contacto.id, false, false));
+                        });
+                        // Establecer el contacto seleccionado
+                        $(editContacto).val(estadoSeguimiento.id_contacto || '').trigger('change');
+                    }
+                }
+            } catch (error) {
+                console.error('Error cargando contactos:', error);
+            }
+        }
+
         document.getElementById('edit-tipo-reunion').value = estadoSeguimiento.id_tipo_reunion || '';
-        document.getElementById('edit-fecha').value = estadoSeguimiento.fecha ? estadoSeguimiento.fecha.date.split(' ')[0] : '';
+
+        // Manejar fecha (puede venir en diferentes formatos)
+        let fechaValue = '';
+        if (estadoSeguimiento.fecha) {
+            if (typeof estadoSeguimiento.fecha === 'string') {
+                fechaValue = estadoSeguimiento.fecha.split(' ')[0];
+            } else if (estadoSeguimiento.fecha.date) {
+                fechaValue = estadoSeguimiento.fecha.date.split(' ')[0];
+            }
+        }
+        document.getElementById('edit-fecha').value = fechaValue;
+
         document.getElementById('edit-estado-ref').value = estadoSeguimiento.id_estado_ref || '';
-        document.getElementById('edit-fecha-compromiso').value = estadoSeguimiento.fecha_compromiso ? estadoSeguimiento.fecha_compromiso.date.split(' ')[0] : '';
+
+        // Manejar fecha_compromiso (puede venir en diferentes formatos)
+        let fechaCompromisoValue = '';
+        if (estadoSeguimiento.fecha_compromiso) {
+            if (typeof estadoSeguimiento.fecha_compromiso === 'string') {
+                fechaCompromisoValue = estadoSeguimiento.fecha_compromiso.split(' ')[0];
+            } else if (estadoSeguimiento.fecha_compromiso.date) {
+                fechaCompromisoValue = estadoSeguimiento.fecha_compromiso.date.split(' ')[0];
+            }
+        }
+        document.getElementById('edit-fecha-compromiso').value = fechaCompromisoValue;
+
         document.getElementById('edit-descripcion').value = estadoSeguimiento.descripcion || '';
         document.getElementById('edit-compromiso').value = estadoSeguimiento.compromiso || '';
         document.getElementById('edit-compromiso-concluido').checked = estadoSeguimiento.compromiso_concluido || false;

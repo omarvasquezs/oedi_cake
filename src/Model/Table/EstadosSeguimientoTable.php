@@ -57,13 +57,15 @@ class EstadosSeguimientoTable extends Table
         $this->belongsTo('CreadoPor', [
             'className' => 'Users',
             'foreignKey' => 'creado_por',
-            'joinType' => 'INNER',
+            'propertyName' => 'usuario_creador',
+            'joinType' => 'LEFT',
         ]);
 
         $this->belongsTo('ActualizadoPor', [
             'className' => 'Users',
             'foreignKey' => 'actualizado_por',
-            'joinType' => 'INNER',
+            'propertyName' => 'usuario_actualizador',
+            'joinType' => 'LEFT',
         ]);
     }
 

@@ -119,7 +119,7 @@ class SeguimientoController extends AppController
             $data = $this->request->getData();
 
             // Set user tracking
-            $userId = $this->Authentication->getIdentity()->getIdentifier();
+            $userId = $this->getCurrentUserId();
             $data['creado_por'] = $userId;
             $data['actualizado_por'] = $userId;
 
@@ -151,7 +151,7 @@ class SeguimientoController extends AppController
             $data = $this->request->getData();
 
             // Set user tracking
-            $userId = $this->Authentication->getIdentity()->getIdentifier();
+            $userId = $this->getCurrentUserId();
             $data['actualizado_por'] = $userId;
 
             $estadoSeguimiento = $EstadosSeguimiento->patchEntity($estadoSeguimiento, $data);
@@ -244,5 +244,89 @@ class SeguimientoController extends AppController
             'estados' => $estados,
         ]);
         $this->viewBuilder()->setOption('serialize', ['eventos', 'contactos', 'tiposReunion', 'estados']);
+    }
+
+    /**
+     * Get contactos by evento (AJAX)
+     * Returns all contacts from the municipalidad associated with the evento
+     *
+     * @return \Cake\Http\Response
+     */
+    public function contactsByEvento()
+    {
+        $this->request->allowMethod(['get']);
+        $idEvento = (int)$this->request->getQuery('id_evento');
+        $q = trim((string)$this->request->getQuery('q'));
+
+        if ($idEvento <= 0) {
+            return $this->response->withType('application/json')
+                ->withStringBody(json_encode(['success' => false, 'data' => []]));
+        }
+
+        /** @var \App\Model\Table\EventosTable $Eventos */
+        $Eventos = $this->fetchTable('Eventos');
+        $evento = $Eventos->get($idEvento, ['contain' => []]);
+
+        if (!$evento || !$evento->id_municipalidad) {
+            return $this->response->withType('application/json')
+                ->withStringBody(json_encode(['success' => false, 'data' => []]));
+        }
+
+        /** @var \App\Model\Table\ContactosTable $Contactos */
+        $Contactos = $this->fetchTable('Contactos');
+
+        // Get all contacts from the same municipalidad as the evento
+        $query = $Contactos->find()
+            ->select(['id_contacto', 'nombre_completo', 'cargo'])
+            ->where(['id_municipalidad' => $evento->id_municipalidad])
+            ->orderBy(['nombre_completo' => 'ASC']);
+
+        if ($q !== '') {
+            $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $q) . '%';
+            $query->where([
+                'OR' => [
+                    'nombre_completo LIKE' => $like,
+                    'cargo LIKE' => $like,
+                ],
+            ]);
+        }
+
+        $data = [];
+        foreach ($query->all() as $c) {
+            $sub = $c->cargo ? sprintf(' [%s]', (string)$c->cargo) : '';
+            $data[] = [
+                'id' => (int)$c->id_contacto,
+                'text' => (string)$c->nombre_completo . $sub,
+            ];
+        }
+
+        return $this->response->withType('application/json')
+            ->withStringBody(json_encode(['success' => true, 'data' => $data]));
+    }
+
+    /**
+     * Get current user id from Authentication identity or session fallback.
+     *
+     * @return int
+     */
+    protected function getCurrentUserId(): int
+    {
+        $identity = $this->getRequest()->getAttribute('identity');
+        if ($identity) {
+            $id = (int)$identity->getIdentifier();
+            if ($id > 0) {
+                return $id;
+            }
+        }
+
+        $sessionUser = $this->getRequest()->getSession()->read('Auth.User');
+        if (is_array($sessionUser)) {
+            return (int)($sessionUser['id'] ?? 0);
+        }
+        if (is_object($sessionUser)) {
+            return (int)($sessionUser->id ?? 0);
+        }
+
+        return 0;
     }
 }
