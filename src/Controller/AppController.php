@@ -96,12 +96,21 @@ class AppController extends Controller
      */
     protected function hasRole(string $roleName): bool
     {
-        $sessionUser = $this->getRequest()->getSession()->read('Auth.User');
-        if (!is_array($sessionUser) || empty($sessionUser['id'])) {
-            return false;
+        $identity = $this->getRequest()->getAttribute('identity');
+
+        if ($identity) {
+            $userId = (int)$identity->getIdentifier();
+        } else {
+            $sessionUser = $this->getRequest()->getSession()->read('Auth.User');
+            if (!is_array($sessionUser) || empty($sessionUser['id'])) {
+                return false;
+            }
+            $userId = (int)$sessionUser['id'];
         }
 
-        $userId = (int)$sessionUser['id'];
+        if (empty($userId)) {
+            return false;
+        }
         $modelHasRolesTable = $this->getTableLocator()->get('ModelHasRoles');
         $rolesTable = $this->getTableLocator()->get('Roles');
 
