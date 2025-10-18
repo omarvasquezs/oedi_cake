@@ -1073,6 +1073,44 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
             searchInput.setSelectionRange(length, length);
         }
 
+        // Restaurar foco en los campos de filtro si tienen valor
+        const filterFields = [{
+                element: filterEvento,
+                name: 'filterEvento'
+            },
+            {
+                element: filterDepartamento,
+                name: 'filterDepartamento'
+            },
+            {
+                element: filterEstado,
+                name: 'filterEstado'
+            }
+        ];
+
+        // Verificar si algún filtro de texto tiene foco guardado en sessionStorage
+        const lastFocusedFilter = sessionStorage.getItem('lastFocusedFilter');
+        if (lastFocusedFilter) {
+            const filterField = filterFields.find(f => f.name === lastFocusedFilter);
+            if (filterField && filterField.element && filterField.element.value) {
+                setTimeout(() => {
+                    filterField.element.focus();
+                    const length = filterField.element.value.length;
+                    filterField.element.setSelectionRange(length, length);
+                }, 100);
+            }
+            sessionStorage.removeItem('lastFocusedFilter');
+        }
+
+        // Guardar qué campo tenía el foco antes de aplicar filtros
+        filterFields.forEach(filter => {
+            if (filter.element && filter.element.type === 'text') {
+                filter.element.addEventListener('focus', function() {
+                    sessionStorage.setItem('lastFocusedFilter', filter.name);
+                });
+            }
+        });
+
         toggleFiltersBtn.addEventListener('click', function() {
             const isVisible = filterRow.style.display !== 'none';
             if (isVisible) {
