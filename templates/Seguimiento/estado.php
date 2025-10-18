@@ -1057,12 +1057,21 @@ $this->assign('title', $title ?? 'Estados de Seguimiento');
         const toggleFiltersBtn = document.getElementById('toggleFilters');
         const filterRow = document.getElementById('filterRow');
         const mainSearchContainer = document.getElementById('mainSearchContainer');
+        const searchInput = document.getElementById('searchInput');
         const filterEvento = document.getElementById('filterEvento');
         const filterDepartamento = document.getElementById('filterDepartamento');
         const filterFecha = document.getElementById('filterFecha');
         const filterEstado = document.getElementById('filterEstado');
         const filterFechaCompromiso = document.getElementById('filterFechaCompromiso');
         let filterTimeout;
+
+        // Restaurar foco en el campo de búsqueda si hay búsqueda activa
+        if (searchInput && searchInput.value && mainSearchContainer && !mainSearchContainer.hasAttribute('hidden')) {
+            searchInput.focus();
+            // Colocar cursor al final del texto
+            const length = searchInput.value.length;
+            searchInput.setSelectionRange(length, length);
+        }
 
         toggleFiltersBtn.addEventListener('click', function() {
             const isVisible = filterRow.style.display !== 'none';
