@@ -1203,73 +1203,61 @@ $this->assign('title', $title ?? 'Convenios');
     });
 
     // Edit modal opener
-    async function openEditModal(convenio) {
+    function openEditModal(convenio) {
         const form = document.getElementById('editConvenioForm');
-        form.setAttribute('action', "<?= $this->Url->build(['controller' => 'Convenios', 'action' => 'edit']) ?>/" + convenio.id_estado);
-        document.getElementById('edit-id').value = convenio.id_estado;
+        form.setAttribute('action', "<?= $this->Url->build(['controller' => 'Convenios', 'action' => 'edit']) ?>/" + convenio.id_convenio);
+        document.getElementById('edit-id').value = convenio.id_convenio;
 
-        // Establecer el evento primero
-        $('#edit-evento').val(convenio.id_evento || '').trigger('change');
+        // Municipalidad
+        $('#edit-municipalidad').val(convenio.id_municipalidad || '').trigger('change');
 
-        // Cargar contactos del evento si existe
-        if (convenio.id_evento) {
-            try {
-                const url = new URL('<?= $this->Url->build(['controller' => 'Convenios', 'action' => 'contactsByEvento']) ?>', window.location.origin);
-                url.searchParams.set('id_evento', convenio.id_evento);
+        // Tipo Convenio
+        $('#edit-tipo-convenio').val(convenio.tipo_convenio || '').trigger('change');
 
-                const response = await fetch(url.toString(), {
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
+        // Sector
+        document.getElementById('edit-sector').value = convenio.id_sector || '';
+        $('#edit-sector').trigger('change');
 
-                if (response.ok) {
-                    const result = await response.json();
+        // Dirección de Línea
+        document.getElementById('edit-direccion-linea').value = convenio.id_direccion_linea || '';
+        $('#edit-direccion-linea').trigger('change');
 
-                    if (result.success && result.data) {
-                        const editContacto = document.getElementById('edit-contacto');
-                        $(editContacto).empty().append('<option value="">Seleccione un contacto</option>');
-                        result.data.forEach(contacto => {
-                            $(editContacto).append(new Option(contacto.text, contacto.id, false, false));
-                        });
-                        // Establecer el contacto seleccionado
-                        $(editContacto).val(convenio.id_contacto || '').trigger('change');
-                    }
-                }
-            } catch (error) {
-                console.error('Error cargando contactos:', error);
+        // Monto
+        document.getElementById('edit-monto').value = convenio.monto || '';
+
+        // Fecha de Firma
+        let fechaFirmaValue = '';
+        if (convenio.fecha_firma) {
+            if (typeof convenio.fecha_firma === 'string') {
+                fechaFirmaValue = convenio.fecha_firma.split(' ')[0];
+            } else if (convenio.fecha_firma.date) {
+                fechaFirmaValue = convenio.fecha_firma.date.split(' ')[0];
             }
         }
+        document.getElementById('edit-fecha-firma').value = fechaFirmaValue;
 
-        document.getElementById('edit-tipo-reunion').value = convenio.id_tipo_reunion || '';
+        // Estado
+        document.getElementById('edit-estado-convenio').value = convenio.id_estado_convenio || '';
+        $('#edit-estado-convenio').trigger('change');
 
-        // Manejar fecha (puede venir en diferentes formatos)
-        let fechaValue = '';
-        if (convenio.fecha) {
-            if (typeof convenio.fecha === 'string') {
-                fechaValue = convenio.fecha.split(' ')[0];
-            } else if (convenio.fecha.date) {
-                fechaValue = convenio.fecha.date.split(' ')[0];
-            }
-        }
-        document.getElementById('edit-fecha').value = fechaValue;
+        // Código Interno
+        document.getElementById('edit-codigo-interno').value = convenio.codigo_interno || '';
 
-        document.getElementById('edit-estado-ref').value = convenio.id_estado_ref || '';
+        // Código Convenio
+        document.getElementById('edit-codigo-convenio').value = convenio.codigo_convenio || '';
 
-        // Manejar fecha_compromiso (puede venir en diferentes formatos)
-        let fechaCompromisoValue = '';
-        if (convenio.fecha_compromiso) {
-            if (typeof convenio.fecha_compromiso === 'string') {
-                fechaCompromisoValue = convenio.fecha_compromiso.split(' ')[0];
-            } else if (convenio.fecha_compromiso.date) {
-                fechaCompromisoValue = convenio.fecha_compromiso.date.split(' ')[0];
-            }
-        }
-        document.getElementById('edit-fecha-compromiso').value = fechaCompromisoValue;
+        // Código IDEA/CUI
+        document.getElementById('edit-codigo-idea-cui').value = convenio.codigo_idea_cui || '';
 
+        // Beneficiarios
+        document.getElementById('edit-beneficiarios').value = convenio.beneficiarios || '';
+
+        // Descripción IDEA/CUI
+        document.getElementById('edit-descripcion-idea-cui').value = convenio.descripcion_idea_cui || '';
+
+        // Descripción
         document.getElementById('edit-descripcion').value = convenio.descripcion || '';
-        document.getElementById('edit-compromiso').value = convenio.compromiso || '';
-        document.getElementById('edit-compromiso-concluido').checked = convenio.compromiso_concluido || false;
+
         try {
             new bootstrap.Modal(document.getElementById('editConvenioModal')).show();
         } catch (e) {
@@ -1279,45 +1267,52 @@ $this->assign('title', $title ?? 'Convenios');
 
     // View modal opener
     function openViewModal(convenio) {
-        // Evento
-        const eventoText = convenio.evento?.tipo_acercamiento || 'N/A';
-        const eventoFecha = convenio.evento?.fecha ? formatDate(convenio.evento.fecha) : '';
-        document.getElementById('view-evento').innerHTML = `${eventoText}${eventoFecha ? `<br><small class="text-muted">Fecha: ${eventoFecha}</small>` : ''}`;
+        // Municipalidad
+        document.getElementById('view-municipalidad').textContent = convenio.municipalidade?.nombre || 'N/A';
 
-        // Contacto
-        document.getElementById('view-contacto').textContent = convenio.contacto?.nombre_completo || 'N/A';
+        // Tipo Convenio
+        document.getElementById('view-tipo-convenio').textContent = convenio.tipo_convenio || 'N/A';
 
-        // Tipo de Reunión
-        document.getElementById('view-tipo-reunion').textContent = convenio.tipos_reunion?.descripcion || 'N/A';
+        // Sector
+        document.getElementById('view-sector').textContent = convenio.sectore?.descripcion || 'N/A';
 
-        // Fecha
-        let fechaText = 'N/A';
-        if (convenio.fecha) {
-            fechaText = formatDate(convenio.fecha);
+        // Dirección de Línea
+        document.getElementById('view-direccion-linea').textContent = convenio.direcciones_linea?.descripcion || 'N/A';
+
+        // Monto
+        const montoFormatted = convenio.monto ? 'S/. ' + parseFloat(convenio.monto).toLocaleString('es-PE', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }) : 'N/A';
+        document.getElementById('view-monto').textContent = montoFormatted;
+
+        // Fecha de Firma
+        let fechaFirmaText = 'N/A';
+        if (convenio.fecha_firma) {
+            fechaFirmaText = formatDate(convenio.fecha_firma);
         }
-        document.getElementById('view-fecha').textContent = fechaText;
+        document.getElementById('view-fecha-firma').textContent = fechaFirmaText;
 
         // Estado
-        document.getElementById('view-estado-ref').textContent = convenio.estado?.descripcion || 'N/A';
+        document.getElementById('view-estado').textContent = convenio.estados_convenio?.descripcion || 'N/A';
+
+        // Código Interno
+        document.getElementById('view-codigo-interno').textContent = convenio.codigo_interno || 'N/A';
+
+        // Código Convenio
+        document.getElementById('view-codigo-convenio').textContent = convenio.codigo_convenio || 'N/A';
+
+        // Código IDEA/CUI
+        document.getElementById('view-codigo-idea-cui').textContent = convenio.codigo_idea_cui || 'N/A';
+
+        // Beneficiarios
+        document.getElementById('view-beneficiarios').textContent = convenio.beneficiarios || 'N/A';
+
+        // Descripción IDEA/CUI
+        document.getElementById('view-descripcion-idea-cui').textContent = convenio.descripcion_idea_cui || 'N/A';
 
         // Descripción
         document.getElementById('view-descripcion').textContent = convenio.descripcion || 'Sin descripción';
-
-        // Fecha Compromiso
-        let fechaCompromisoText = 'Sin fecha de compromiso';
-        if (convenio.fecha_compromiso) {
-            fechaCompromisoText = formatDate(convenio.fecha_compromiso);
-        }
-        document.getElementById('view-fecha-compromiso').textContent = fechaCompromisoText;
-
-        // Estado del Compromiso
-        const compromisoEstadoHtml = convenio.compromiso_concluido ?
-            '<span style="color: #27ae60;"><i class="fa-solid fa-check-circle"></i> Concluido</span>' :
-            '<span style="color: #e67e22;"><i class="fa-solid fa-clock"></i> Pendiente</span>';
-        document.getElementById('view-compromiso-estado').innerHTML = compromisoEstadoHtml;
-
-        // Compromiso
-        document.getElementById('view-compromiso').textContent = convenio.compromiso || 'Sin compromiso';
 
         // Mostrar modal
         try {
