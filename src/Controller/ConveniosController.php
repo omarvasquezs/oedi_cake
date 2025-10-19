@@ -252,13 +252,269 @@ class ConveniosController extends AppController
     }
 
     /**
-     * Seguimiento page
+     * Return next available Codigo Interno for a given ubigeo (AJAX JSON)
+     *
+     * Response: { next: "OEDI-<ubigeo>-<nnn>", raw: <number> }
+     *
+     * @return \Cake\Http\Response|null
+     */
+    public function nextCodigoInterno()
+    {
+        $this->request->allowMethod(['get']);
+        $this->viewBuilder()->setClassName('Json');
+
+        $ubigeo = trim((string)$this->request->getQuery('ubigeo'));
+        if ($ubigeo === '') {
+            $this->set(['error' => 'Ubigeo requerido']);
+            $this->viewBuilder()->setOption('serialize', ['error']);
+            return;
+        }
+
+        /** @var \App\Model\Table\ConveniosTable $Convenios */
+        $Convenios = $this->fetchTable('Convenios');
+
+        // Find existing codes that start with OEDI-{ubigeo}- and extract the numeric suffix
+        $like = 'OEDI-' . $ubigeo . '-%';
+        $rows = $Convenios->find()
+            ->select(['codigo_interno'])
+            ->where(['codigo_interno LIKE' => $like])
+            ->all()
+            ->extract('codigo_interno')
+            ->toArray();
+
+        $max = 0;
+        foreach ($rows as $code) {
+            // attempt to parse trailing numeric part
+            $parts = explode('-', $code);
+            $last = end($parts);
+            $num = (int)preg_replace('/[^0-9]/', '', (string)$last);
+            if ($num > $max) {
+                $max = $num;
+            }
+        }
+
+        $nextNum = $max + 1;
+        // zero-pad to 3 digits (assumption)
+        $formatted = sprintf('OEDI-%s-%03d', $ubigeo, $nextNum);
+
+        $this->set(['next' => $formatted, 'raw' => $nextNum]);
+        $this->viewBuilder()->setOption('serialize', ['next', 'raw']);
+    }
+
+    /**
+     * Seguimiento page with search, filters and pagination.
      *
      * @return void
      */
     public function seguimiento()
     {
         $this->set('title', 'Seguimiento de Convenios');
+
+        /** @var \App\Model\Table\ConveniosSeguimientoTable $ConveniosSeguimiento */
+        $ConveniosSeguimiento = $this->fetchTable('ConveniosSeguimiento');
+
+        $params = $this->request->getQueryParams();
+        $allowedPerPage = [10, 20, 40, 50, 100];
+        $perPage = (int)($params['per_page'] ?? 20);
+        if (!in_array($perPage, $allowedPerPage, true)) {
+            $perPage = 20;
+        }
+
+        $query = $ConveniosSeguimiento->find()
+            ->contain([
+                'Convenios' => [
+                    'Municipalidades',
+                ],
+                'EstadosConvenios',
+            ]);
+
+        // Global search
+        $search = trim((string)($params['search'] ?? ''));
+        if ($search !== '') {
+            $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $search) . '%';
+            $query->where([
+                'OR' => [
+                    'Convenios.tipo_convenio LIKE' => $like,
+                    'Convenios.codigo_interno LIKE' => $like,
+                    'Municipalidades.nombre LIKE' => $like,
+                    'EstadosConvenios.descripcion LIKE' => $like,
+                    'ConveniosSeguimiento.comentarios LIKE' => $like,
+                    'ConveniosSeguimiento.acciones_realizadas LIKE' => $like,
+                ],
+            ]);
+        }
+
+        // Column filters
+        $filterConvenio = trim((string)($params['filter_convenio'] ?? ''));
+        if ($filterConvenio !== '') {
+            $likeFilter = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterConvenio) . '%';
+            $query->where([
+                'OR' => [
+                    'Convenios.tipo_convenio LIKE' => $likeFilter,
+                    'Convenios.codigo_interno LIKE' => $likeFilter,
+                    'Municipalidades.nombre LIKE' => $likeFilter,
+                ],
+            ]);
+        }
+
+        $filterFecha = trim((string)($params['filter_fecha'] ?? ''));
+        if ($filterFecha !== '') {
+            $query->where(['ConveniosSeguimiento.fecha' => $filterFecha]);
+        }
+
+        $filterEstado = trim((string)($params['filter_estado'] ?? ''));
+        if ($filterEstado !== '') {
+            $likeFilter = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $filterEstado) . '%';
+            $query->where(['EstadosConvenios.descripcion LIKE' => $likeFilter]);
+        }
+
+        $filterFechaSeguimiento = trim((string)($params['filter_fecha_seguimiento'] ?? ''));
+        if ($filterFechaSeguimiento !== '') {
+            $query->where(['ConveniosSeguimiento.fecha_seguimiento' => $filterFechaSeguimiento]);
+        }
+
+        // Order
+        $query->orderBy(['ConveniosSeguimiento.fecha' => 'DESC']);
+
+        $this->paginate = [
+            'limit' => $perPage,
+        ];
+        $seguimientos = $this->paginate($query);
+
+        $this->set(compact(
+            'seguimientos',
+            'search',
+            'perPage',
+            'filterConvenio',
+            'filterFecha',
+            'filterEstado',
+            'filterFechaSeguimiento'
+        ));
+    }
+
+    /**
+     * Add a new seguimiento.
+     *
+     * @return \Cake\Http\Response|null|void
+     */
+    public function addSeguimiento()
+    {
+        /** @var \App\Model\Table\ConveniosSeguimientoTable $ConveniosSeguimiento */
+        $ConveniosSeguimiento = $this->fetchTable('ConveniosSeguimiento');
+        $seguimiento = $ConveniosSeguimiento->newEmptyEntity();
+
+        if ($this->request->is('post')) {
+            $seguimiento = $ConveniosSeguimiento->patchEntity($seguimiento, $this->request->getData());
+            if ($ConveniosSeguimiento->save($seguimiento)) {
+                $this->Flash->success(__('El seguimiento ha sido guardado.'));
+            } else {
+                $this->Flash->error(__('El seguimiento no pudo ser guardado. Por favor, intente de nuevo.'));
+            }
+        }
+
+        return $this->redirect(['action' => 'seguimiento']);
+    }
+
+    /**
+     * Edit a seguimiento.
+     *
+     * @param int $id Seguimiento ID
+     * @return \Cake\Http\Response|null|void
+     */
+    public function editSeguimiento(?int $id = null)
+    {
+        /** @var \App\Model\Table\ConveniosSeguimientoTable $ConveniosSeguimiento */
+        $ConveniosSeguimiento = $this->fetchTable('ConveniosSeguimiento');
+        $seguimiento = $ConveniosSeguimiento->get($id);
+
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $seguimiento = $ConveniosSeguimiento->patchEntity($seguimiento, $this->request->getData());
+            if ($ConveniosSeguimiento->save($seguimiento)) {
+                $this->Flash->success(__('El seguimiento ha sido actualizado.'));
+            } else {
+                $this->Flash->error(__('El seguimiento no pudo ser actualizado. Por favor, intente de nuevo.'));
+            }
+        }
+
+        return $this->redirect(['action' => 'seguimiento']);
+    }
+
+    /**
+     * Delete a seguimiento.
+     *
+     * @param int $id Seguimiento ID
+     * @return \Cake\Http\Response|null|void
+     */
+    public function deleteSeguimiento(?int $id = null)
+    {
+        $this->request->allowMethod(['post', 'delete']);
+        /** @var \App\Model\Table\ConveniosSeguimientoTable $ConveniosSeguimiento */
+        $ConveniosSeguimiento = $this->fetchTable('ConveniosSeguimiento');
+        $seguimiento = $ConveniosSeguimiento->get($id);
+
+        if ($ConveniosSeguimiento->delete($seguimiento)) {
+            $this->Flash->success(__('El seguimiento ha sido eliminado.'));
+        } else {
+            $this->Flash->error(__('El seguimiento no pudo ser eliminado. Por favor, intente de nuevo.'));
+        }
+
+        return $this->redirect(['action' => 'seguimiento']);
+    }
+
+    /**
+     * Get dropdown data for seguimiento forms (AJAX)
+     *
+     * @return \Cake\Http\Response|null
+     */
+    public function getSeguimientoDropdownData()
+    {
+        $this->request->allowMethod(['get']);
+        $this->viewBuilder()->setClassName('Json');
+
+        /** @var \App\Model\Table\ConveniosTable $Convenios */
+        $Convenios = $this->fetchTable('Convenios');
+        /** @var \App\Model\Table\EstadosConveniosTable $EstadosConvenios */
+        $EstadosConvenios = $this->fetchTable('EstadosConvenios');
+
+        $convenios = $Convenios->find()
+            ->contain(['Municipalidades'])
+            ->select([
+                'Convenios.id_convenio',
+                'Convenios.tipo_convenio',
+                'Convenios.codigo_interno',
+                'Convenios.codigo_idea_cui',
+                'Municipalidades.nombre',
+                'Municipalidades.ubigeo',
+            ])
+            ->orderBy(['Convenios.created_at' => 'DESC'])
+            ->all()
+            ->map(function ($row) {
+                // Support both singular and plural relationship names
+                $municipalidad = $row->municipalidades ?? $row->municipalidade;
+                $nombreMun = $municipalidad ? $municipalidad->nombre : 'N/A';
+                $ubigeoMun = $municipalidad ? ($municipalidad->ubigeo ?? '') : '';
+                return [
+                    'id' => $row->id_convenio,
+                    'text' => sprintf('%s - %s [%s]', $row->tipo_convenio, $nombreMun, $row->codigo_interno),
+                    'tipo_convenio' => $row->tipo_convenio,
+                    'nombre' => $nombreMun,
+                    'codigo_interno' => $row->codigo_interno,
+                    'codigo_idea_cui' => $row->codigo_idea_cui,
+                    'ubigeo' => $ubigeoMun,
+                ];
+            })
+            ->toArray();
+
+        $estadosConvenio = $EstadosConvenios->find('list', [
+            'keyField' => 'id_estado_convenio',
+            'valueField' => 'descripcion',
+        ])->orderBy(['descripcion' => 'ASC'])->toArray();
+
+        $this->set([
+            'convenios' => $convenios,
+            'estadosConvenio' => $estadosConvenio,
+        ]);
+        $this->viewBuilder()->setOption('serialize', ['convenios', 'estadosConvenio']);
     }
 
     /**
