@@ -896,6 +896,30 @@ $this->assign('title', $title ?? 'Convenios');
                     }
                 }
             });
+            // Auto-fill Codigo Interno when a municipalidad is selected in Add Modal
+            const addCodigoInternoInput = document.querySelector('#addConvenioModal input[name="codigo_interno"]');
+            if (addCodigoInternoInput) {
+                $(addMunicipalidad).on('select2:select', function(e) {
+                    const data = e.params.data || {};
+                    const ubigeo = data.ubigeo || '';
+                    if (!ubigeo) return;
+
+                    fetch('<?= $this->Url->build(['controller' => 'Convenios', 'action' => 'nextCodigoInterno']) ?>?ubigeo=' + encodeURIComponent(ubigeo))
+                        .then(r => r.json())
+                        .then(json => {
+                            if (json && json.next) {
+                                addCodigoInternoInput.value = json.next;
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Error obteniendo siguiente código interno:', err);
+                        });
+                });
+
+                $(addMunicipalidad).on('select2:unselect', function() {
+                    addCodigoInternoInput.value = '';
+                });
+            }
         }
 
         // Populate Add Modal - Tipo Convenio
@@ -1234,6 +1258,8 @@ $this->assign('title', $title ?? 'Convenios');
                 fechaFirmaValue = convenio.fecha_firma.date.split(' ')[0];
             }
         }
+
+
         document.getElementById('edit-fecha-firma').value = fechaFirmaValue;
 
         // Estado
