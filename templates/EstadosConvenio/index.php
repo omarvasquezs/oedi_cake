@@ -137,7 +137,7 @@ $this->assign('title', $title ?? 'Estados de Convenio');
         </button>
     </div>
 
-    <div class="table-wrapper" style="background:white;border-radius:8px;border:1px solid #e0e0e0;overflow:hidden;">
+    <div class="table-wrapper" style="background:white;border-radius:8px;border:1px solid #e0e0e0;overflow-y:auto;min-height:0;max-height:calc(100vh - 300px);">
         <table style="width:100%;border-collapse:collapse;">
             <thead>
                 <tr style="background:#f8f9fa;border-bottom:2px solid #e0e0e0;">
@@ -182,7 +182,7 @@ $this->assign('title', $title ?? 'Estados de Convenio');
     <div class="pagination-section" style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-top:1.5rem;padding:0 0.5rem;">
         <div style="display:flex;align-items:center;gap:0.5rem;">
             <span style="color:#666;font-size:14px;line-height:1;">Mostrar:</span>
-            <select id="perPageSelect" onchange="changePerPage(this.value)" style="padding:0.5rem 2rem 0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-size:14px;cursor:pointer;background:white url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3e%3cpath fill=%27none%27 stroke=%27%23343a40%27 stroke-linecap=%27round%27 stroke-linejoin%27round%27 stroke-width%272%27 d%27m2 5 6 6 6-6%27/%3e%3c/svg%3e') no-repeat right 0.5rem center/12px 12px;height:36px;line-height:1;margin-bottom:0;appearance:none;-webkit-appearance:none;-moz-appearance:none;width:auto;">
+            <select id="perPageSelect" onchange="changePerPage(this.value)" style="padding:0.5rem 2rem 0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-size:14px;cursor:pointer;background:white url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3e%3cpath fill=%27none%27 stroke=%27%23343a40%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m2 5 6 6 6-6%27/%3e%3c/svg%3e') no-repeat right 0.5rem center/12px 12px;height:36px;line-height:1;margin-bottom:0;width:auto;">
                 <option value="10" <?= $perPage == 10 ? 'selected' : '' ?>>10</option>
                 <option value="20" <?= $perPage == 20 ? 'selected' : '' ?>>20</option>
                 <option value="40" <?= $perPage == 40 ? 'selected' : '' ?>>40</option>

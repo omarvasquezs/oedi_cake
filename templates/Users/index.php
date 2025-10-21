@@ -258,7 +258,7 @@ $this->assign('title', $title ?? 'Usuarios');
     </div>
 
     <!-- Table -->
-    <div class="table-wrapper" style="background: white; border-radius: 8px; border: 1px solid #e0e0e0; overflow: hidden;">
+    <div class="table-wrapper" style="background: white; border-radius: 8px; border: 1px solid #e0e0e0; overflow-y: auto; min-height: 0; max-height: calc(100vh - 300px);">
         <table style="width: 100%; border-collapse: collapse;">
             <thead>
                 <tr style="background: #f8f9fa; border-bottom: 2px solid #e0e0e0;">
